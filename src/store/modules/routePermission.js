@@ -2,6 +2,7 @@ import { asyncRouterMap, constantRouterMap } from '@/router/index.js'
 
 function hasPermission(roles, route) {
   if (route.meta && route.meta.role) {
+    console.log(roles[0])
     return roles.some(role => route.meta.role.indexOf(role) >= 0)
   } else {
     return true

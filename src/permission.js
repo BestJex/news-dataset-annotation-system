@@ -2,7 +2,8 @@ import router from '@/router'
 import store from '@/store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
-import 'nprogress/nprogress.css' // progress bar style
+import 'nprogress/nprogress.css'
+import ro from 'element-ui/src/locale/lang/ro' // progress bar style
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -29,7 +30,6 @@ router.beforeEach((to, from, next) => {
             const roles = new Array(res.data.role)
             store.dispatch('generateRoutes', roles).then(accessRoutes => {
               // 生成可访问的路由表
-              console.log(accessRoutes)
               router.addRoutes(accessRoutes) // 动态添加可访问路由表
               next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
             })
