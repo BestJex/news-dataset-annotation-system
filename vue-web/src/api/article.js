@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function addArticle(article) {
   return request({
-    url: '/article/addArticle',
+    url: '/annotation/addArticle',
     method: 'post',
     data: {
       article
@@ -12,7 +12,7 @@ export function addArticle(article) {
 
 export function updateArticle(article) {
   return request({
-    url: '/article/updateArticle',
+    url: '/annotation/updateArticle',
     method: 'post',
     data: {
       article
@@ -22,7 +22,7 @@ export function updateArticle(article) {
 
 export function deleteArticle(article) {
   return request({
-    url: '/article/deleteArticle',
+    url: '/annotation/deleteArticle',
     method: 'post',
     data: {
       article
@@ -32,7 +32,7 @@ export function deleteArticle(article) {
 
 export function getArticleList() {
   return request({
-    url: '/article/getArticleList',
+    url: '/annotation/getArticleList',
     method: 'get'
   })
 }

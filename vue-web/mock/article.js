@@ -13,7 +13,7 @@ const articleList = Mock.mock({
 
 export default [
   {
-    url: '/article/getArticleList',
+    url: '/annotation/getArticleList',
     type: 'get',
     response: config => {
       const items = articleList.items

@@ -46,7 +46,7 @@ export const constantRouterMap = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/home/Home'),
-        meta: { title: '后台管理系统', icon: 'dashboard' }
+        meta: { title: '数据集标注系统', icon: 'dashboard' }
       }
     ]
   }
@@ -116,39 +116,40 @@ export const asyncRouterMap = [
 
   // 文章模块
   {
-    path: '/article',
+    path: '/annotation',
     component: Layout,
-    name: 'Article',
-    redirect: '/article/list',
+    name: 'Annotation',
+    redirect: '/annotation/list',
     alwaysShow: true,
     meta: {
-      title: '文章管理',
+      title: '标注管理',
       icon: 'nested',
       role: ['admin']
     },
     children: [
       {
         path: 'new',
-        component: () => import('@/views/article/NewArticle'),
-        name: 'NewArticle',
+        component: () => import('@/views/annotation/NewAnnotation'),
+        name: 'NewAnnotation',
         meta: {
           role: ['admin'],
-          title: '新建博文',
-          icon: 'checklist',
+          title: '开始标注',
+          icon: 'form',
           noCache: true
           // 页面需要的权限
         }
       },
       {
         path: 'list',
-        component: () => import('@/views/article/ArticleList'),
-        name: 'ArticleList',
+        component: () => import('@/views/annotation/AnnotationTaskList'),
+        name: 'AnnotationTaskList',
         meta: {
           role: ['admin'],
-          title: '博文列表',
-          icon: 'addteam',
+          title: '标注列表',
+          icon: 'table',
           noCache: true
-        } // 页面需要的权限
+          // 页面需要的权限
+        }
       }
     ]
   },
