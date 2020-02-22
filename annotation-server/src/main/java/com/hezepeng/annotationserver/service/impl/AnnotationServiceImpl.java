@@ -1,6 +1,7 @@
 package com.hezepeng.annotationserver.service.impl;
 
 import com.hezepeng.annotationserver.common.ServerResponse;
+import com.hezepeng.annotationserver.dao.AnnotationRepository;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,25 @@ public class AnnotationServiceImpl implements AnnotationService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private AnnotationRepository annotationRepository;
+
     @Override
     public ServerResponse<List<News>> getNewsAnnotationList(HttpServletRequest request) {
         try {
-            List<News> data = mongoTemplate.findAll(News.class);
+            List<News> data = annotationRepository.findAllAnnotationNewsList();
+            return ServerResponse.createBySuccess(data);
+
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    @Override
+    public ServerResponse<News> getOneNewsAnnotationById(String id) {
+        try {
+            System.out.println(id);
+            News data = annotationRepository.findOneAnnotationNewsById(id);
             return ServerResponse.createBySuccess(data);
 
         } catch (Exception ex) {

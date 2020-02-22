@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface AnnotationService {
     ServerResponse<List<News>> getNewsAnnotationList(HttpServletRequest request);
+
+    ServerResponse<News> getOneNewsAnnotationById(String id);
 }
