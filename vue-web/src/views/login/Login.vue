@@ -64,8 +64,8 @@ export default {
     return {
       message: '',
       loginForm: {
-        username: 'admin',
-        password: 'admin'
+        username: 'hezepeng',
+        password: 'hezepeng'
       },
       loading: false,
       pwdType: 'password',

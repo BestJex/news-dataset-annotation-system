@@ -4,10 +4,13 @@ package com.hezepeng.annotationserver.conf;
  * @author: Hezepeng
  * @email: hezepeng96@foxmail.com
  * @date: 2020/2/20 14:46
+ * 定义mongo的字典字段、时间字段到Java实体类、时间的转换器
  */
 
 import com.hezepeng.annotationserver.entity.Tag;
 import com.hezepeng.annotationserver.util.DateTimeUtil;
+import com.mongodb.Mongo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+@Slf4j
 @Configuration
 @EnableMongoAuditing
 public class MongoConfiguration {
@@ -61,8 +65,9 @@ public class MongoConfiguration {
         DbRefResolver dbRefResolver = new DefaultDbRefResolver(factory);
         MappingMongoConverter mappingConverter = new MappingMongoConverter(dbRefResolver, context);
         try {
-            mappingConverter.setCustomConversions(beanFactory.getBean(CustomConversions.class));
+            mappingConverter.setCustomConversions(beanFactory.getBean(MongoCustomConversions.class));
         } catch (NoSuchBeanDefinitionException ignore) {
+            log.error(ignore.getMessage());
         }
 
         // 去掉_class字段
@@ -104,7 +109,6 @@ public class MongoConfiguration {
         @Override
         public Tag convert(String source) {
             // 不符合规范的tag对象会自动调用这个转换器 字符数组["CHINA","USA"] -> 两个Tag对象
-            System.out.println("xxx:" + source.toString());
             return new Tag(source, null);
         }
     }

@@ -24,16 +24,18 @@ public class Const {
     /**
      * token secret
      */
-    public static final String TOKEN_SECRET = "zeblog";
+    public static final String TOKEN_SECRET = "NewsGrid";
 
     /**
      * token 颁发者
      */
-    public static final String TOKEN_ISSUER = "zeblog";
+    public static final String TOKEN_ISSUER = "Hezepeng";
 
     /**
      * Headers中储存Token信息的字段名
      */
     public static final String TOKEN_HEADER_NAME = "X-Token";
+
+    public static final String DEFAULT_AVATAR = "https://zeblog-1252705718.cos.ap-guangzhou.myqcloud.com/avatar/sea.jpg";
 
 }
