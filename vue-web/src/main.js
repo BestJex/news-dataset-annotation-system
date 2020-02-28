@@ -7,7 +7,10 @@ import './plugins/element.js'
 import '@/icons' // icon
 import '@/permission'
 import '@/styles/index.scss' // global css
+import VueClipboard from 'vue-clipboard2'
 
+VueClipboard.config.autoSetContainer = true
+Vue.use(VueClipboard)
 Vue.config.productionTip = false
 
 new Vue({

@@ -2,8 +2,8 @@
   <div>
     <el-row style="padding: 20px">
       <el-col :span="12">
-        <span style="font-size: 14px">标注进度 - {{ currentNo }}/600</span>
-        <el-progress :text-inside="true" :stroke-width="5" :percentage="42" />
+        <span style="font-size: 14px">标注进度 - {{ currentNo }}/100</span>
+        <el-progress :text-inside="true" :stroke-width="5" :percentage="currentNo" />
       </el-col>
       <el-col :span="12">
         <el-button-group style="float:right;">
@@ -14,93 +14,168 @@
     </el-row>
     <el-row style="padding: 20px" :gutter="20">
       <el-col :span="12">
-        <div style="color: dodgerblue;font-size: 16px;margin-bottom: 5px">原文</div>
-        <el-input
-          v-model="content"
-          style="margin-bottom: 20px"
-          type="textarea"
-          :rows="15"
-          placeholder="请输入内容"
-        />
-        <div style="color: dodgerblue;font-size: 16px;margin-bottom: 5px">翻译</div>
-        <el-input
-          v-model="content_translate"
-          type="textarea"
-          :rows="15"
-          placeholder="请输入内容"
-        />
+        <el-tabs type="border-card">
+          <el-tab-pane label="翻译">
+            <div style="margin-bottom: 10px">
+              <span style="color: dodgerblue;font-size: 14px;">
+                _id :
+                <el-tooltip class="item" effect="dark" content="点击复制" placement="right-end">
+                  <a
+                    v-clipboard:copy="id"
+                    v-clipboard:success="onCopySuccess"
+                    v-clipboard:error="onCopyError"
+                    style="text-underline: none"
+                  >{{ id }}</a>
+                </el-tooltip>
+              </span>
+            </div>
+            <el-input
+              v-model="content_translate"
+              type="textarea"
+              :rows="25"
+              placeholder="请输入内容"
+            />
+          </el-tab-pane>
+          <el-tab-pane label="原文">
+            <div style="margin-bottom: 10px">
+              <span style="color: dodgerblue;font-size: 14px;">
+                _id :
+                <el-tooltip class="item" effect="dark" content="点击复制" placement="right-end">
+                  <a
+                    v-clipboard:copy="id"
+                    v-clipboard:success="onCopySuccess"
+                    v-clipboard:error="onCopyError"
+                    style="text-underline: none"
+                  >{{ id }}</a>
+                </el-tooltip>
+              </span>
+            </div>
+            <el-input
+              v-model="content"
+              style="margin-bottom: 20px"
+              type="textarea"
+              :rows="25"
+              placeholder="请输入内容"
+            />
+          </el-tab-pane>
+          <el-tab-pane label="其他信息">文章的其他信息</el-tab-pane>
+        </el-tabs>
       </el-col>
 
       <el-col :span="12">
         <el-form ref="form" :model="form" :rules="formRules" label-width="80px">
           <el-form-item label="情感">
-            <el-checkbox-group v-model="form.emotion">
-              <el-checkbox label="快乐(PA)" name="emotion" />
-              <el-checkbox label="安心(PE)" name="emotion" />
-
-              <el-checkbox label="尊敬(PD)" name="emotion" />
-              <el-checkbox label="赞扬(PH)" name="emotion" />
-              <el-checkbox label="相信(PG)" name="emotion" />
-              <el-checkbox label="喜爱(PB)" name="emotion" />
-              <el-checkbox label="祝愿(PK)" name="emotion" />
-
-              <el-checkbox label="愤怒(NA)" name="emotion" />
-
-              <el-checkbox label="悲伤(NB)" name="emotion" />
-              <el-checkbox label="失望(NJ)" name="emotion" />
-              <el-checkbox label="内疚(NH)" name="emotion" />
-              <el-checkbox label="思念(PF)" name="emotion" />
-
-              <el-checkbox label="恐慌(NI)" name="emotion" />
-              <el-checkbox label="恐惧(NC)" name="emotion" />
-              <el-checkbox label="羞愧(NG)" name="emotion" />
-
-              <el-checkbox label="烦闷(NE)" name="emotion" />
-              <el-checkbox label="憎恶(ND)" name="emotion" />
-              <el-checkbox label="贬责(NN)" name="emotion" />
-              <el-checkbox label="妒忌(NK)" name="emotion" />
-              <el-checkbox label="怀疑(NL)" name="emotion" />
-
-              <el-checkbox label="惊奇(PC)" name="emotion" />
+            <el-checkbox-group v-model="form.emotion1" :max="2" @change="emotionChange()">
+              <el-checkbox style="width: 100%;" label="agreeable">
+                尊敬、赞扬、认同
+                <el-badge
+                  v-show="emotionBadge['agreeable']>0"
+                  ref="agreeable"
+                  :value="emotionBadge['agreeable']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="believable">
+                祝愿、祝福、相信、鼓励
+                <el-badge
+                  v-show="emotionBadge['believable']>0"
+                  ref="believable"
+                  :value="emotionBadge['believable']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="good">
+                感激、崇拜、正面惊讶
+                <el-badge
+                  v-show="emotionBadge['good']>0"
+                  ref="good"
+                  :value="emotionBadge['good']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="hated">
+                谴责、批评、愤怒、怀疑、嫉妒、憎恨、反对
+                <el-badge
+                  v-show="emotionBadge['hated']>0"
+                  ref="hated"
+                  :value="emotionBadge['hated']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="sad">
+                悲伤、失望、内疚、思念
+                <el-badge
+                  v-show="emotionBadge['sad']>0"
+                  ref="sad"
+                  :value="emotionBadge['sad']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="worried">
+                慌张、恐惧、恐慌、担忧、担心、害怕、慌张的惊讶
+                <el-badge
+                  v-show="emotionBadge['worried']>0"
+                  ref="worried"
+                  :value="emotionBadge['worried']"
+                  class="badge-item"
+                />
+              </el-checkbox>
+              <el-checkbox style="width: 100%;" label="objective">
+                客观
+                <el-badge
+                  v-show="emotionBadge['objective']>0"
+                  ref="objective"
+                  :value="emotionBadge['objective']"
+                  class="badge-item"
+                />
+              </el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="立场">
-            <el-select v-model="form.position" placeholder="请选择新闻立场">
-              <el-option label="消极" value="negative" />
-              <el-option label="中级" value="nature" />
-              <el-option label="积极" value="positive" />
-            </el-select>
+            <el-checkbox-group v-model="form.position" :max="1">
+              <el-checkbox label="positive">积极</el-checkbox>
+              <el-checkbox label="neutral">中级</el-checkbox>
+              <el-checkbox label="negative">消极</el-checkbox>
+            </el-checkbox-group>
           </el-form-item>
           <el-form-item label="事件主体">
-            <el-select v-model="form.eventSubject" placeholder="请选择事件主体">
-              <el-option label="中国" value="China" />
-              <el-option label="非中国" value="No-China" />
-            </el-select>
+            <!--            <el-select v-model="form.aboutChina" placeholder="请选择事件主体">-->
+            <!--              <el-option label="中国" value="yes" />-->
+            <!--              <el-option label="非中国" value="no" />-->
+            <!--            </el-select>-->
+            <el-checkbox-group v-model="form.isChina" :max="1">
+              <el-checkbox label="yes">中国</el-checkbox>
+              <el-checkbox label="no">非中国</el-checkbox>
+            </el-checkbox-group>
           </el-form-item>
           <el-form-item label="主题">
-            <el-radio-group v-model="form.theme">
-              <el-radio label="国际" />
-              <el-radio label="体育" />
-              <el-radio label="娱乐" />
-              <el-radio label="社会" />
-              <el-radio label="财经" />
-              <el-radio label="时事" />
-              <el-radio label="科技" />
-              <el-radio label="情感" />
-              <el-radio label="教育" />
-              <el-radio label="军事" />
-              <el-radio label="文化" />
-              <el-radio label="历史" />
-            </el-radio-group>
+            <el-checkbox-group v-model="form.subject" :max="1">
+              <el-checkbox label="politics">政治</el-checkbox>
+              <el-checkbox label="society">社会</el-checkbox>
+              <el-checkbox label="technology">科技</el-checkbox>
+              <el-checkbox label="economy">经济</el-checkbox>
+              <el-checkbox label="sports">体育</el-checkbox>
+              <el-checkbox label="humanity">人文</el-checkbox>
+              <el-checkbox label="arts">艺术</el-checkbox>
+              <el-checkbox label="entertainment">娱乐</el-checkbox>
+            </el-checkbox-group>
+            <!--            <el-radio-group v-model="form.subject">-->
+            <!--              <el-radio label="politics">政治</el-radio>-->
+            <!--              <el-radio label="society">社会</el-radio>-->
+            <!--              <el-radio label="technology">科技</el-radio>-->
+            <!--              <el-radio label="economy">经济</el-radio>-->
+            <!--              <el-radio label="sports">体育</el-radio>-->
+            <!--              <el-radio label="humanity">人文</el-radio>-->
+            <!--              <el-radio label="arts">艺术</el-radio>-->
+            <!--              <el-radio label="entertainment">娱乐</el-radio>-->
+            <!--            </el-radio-group>-->
           </el-form-item>
           <el-form-item label="类型">
-            <el-select v-model="form.type" placeholder="请选择新闻类型">
-              <el-option label="事实" value="1" />
-              <el-option label="短文" value="2" />
-              <el-option label="采访" value="3" />
-              <el-option label="无关新闻" value="4" />
-
-            </el-select>
+            <el-checkbox-group v-model="form.type" :max="1">
+              <el-checkbox label="fact">事实</el-checkbox>
+              <el-checkbox label="essay">短文</el-checkbox>
+              <el-checkbox label="interview">采访</el-checkbox>
+            </el-checkbox-group>
           </el-form-item>
           <el-form-item label="情感依据">
             <el-input v-model="form.emotion_basis" type="textarea" :rows="6" />
@@ -145,39 +220,37 @@
 
 <script>
 import { Message } from 'element-ui'
+import axios from 'axios'
+import { save } from '@/api/login'
 
 export default {
   name: 'NewArticle',
 
   data() {
     return {
-      content: 'The main European stock exchanges were this Friday morning, awaiting the employment report in the United States and concerned about the spread of the coronavirus.\n' +
-        'Nearby 08h55 in Lisbon, EuroStoxx 600 descended 0.11% to 425,01 points. The stock exchanges in London and Frankfurt retreated 0,14% and 0,28% as well as those in Madrid and Milan which descended 0,13% and 0,07% respectively. Paris was the exception since it was going up 0,04%.\n' +
-        'After opening downwards, the Lisbon Stock Exchange continued the trend and, around the 8h55, the main index, the PSI20, retreated 0.20% to 5.277,10 points.\n' +
-        'China\'s president, Xi Jinping, has informed US counterpart Donald Trump that the economic development of his country will not be affected in the long term due to the coronavirus crisis. In recent days, the market had doubted China\'s ability to meet the commitments made in the trade agreement between the two countries due to the impact of the coronavirus.\n' +
-        'The epidemic continues to attract the attention of investors, yet today they are waiting for the employment report in the United States. The spread of the coronavirus has already affected consumption, industrial production and other economic sectors, and the consequences are also reflected in the raw material market, where there is expected to be a decline in oil demand.\n' +
-        'However, it was found today that German exports grew less than expected in December and that in Spain industrial production continued to slow down in 2019.\n' +
-        'The New York Stock Exchange ended on Thursday with the Dow Jones moving forward 0.30% to 29.379,77 points, a new maximum since it was created in 1896. In the same sense, Nasdaq closed to value itself 0,67% to 9.572,15 points, a new maximum ever.\n' +
-        'At the exchange rate level, the euro today opened downwards in the Frankfurt exchange market, quoting itself at 10968 dollars, against 10975 dollars on Thursday\n' +
-        'Yeah. Brent\'s oil barrel for delivery in April 2020 opened today low, quoting 58,16 dollars in the London Intercontinental Exchange Futures (ICE) against 58,16 dollars on Thursday and 53,96 dollars on Tuesday, a minimum since 26 in December 2018.',
-      content_translate: '欧洲主要证券交易所本周五上午在美国等待就业报告，并担心冠状病毒的传播。\n' +
-        '里斯本08h55附近，欧洲斯托克600指数下跌0.11%，至425.01点。伦敦和法兰克福股市分别下跌0.14%和0.28%，马德里和米兰股市分别下跌0.13%和0.07%。巴黎是个例外，因为它上涨了0.04%。\n' +
-        '里斯本证交所在开盘下跌后，延续了这一趋势，在8时55分左右，主要股指PSI20下跌0.20%，至5.277,10点。\n' +
-        '中国国家主席习近平已经通知美国总统特朗普，中国的经济发展在长期内不会因为冠状病毒危机而受到影响。最近几天，由于冠状病毒的影响，市场怀疑中国是否有能力履行两国在贸易协定中所作的承诺。\n' +
-        '这一流行病继续引起投资者的注意，但今天他们正在等待美国的就业报告。冠状病毒的传播已经影响到消费、工业生产和其他经济部门，其后果也反映在原材料市场，预计那里的石油需求将下降。\n' +
-        '不过，今天发现，德国12月出口增长低于预期，西班牙工业生产在2019年继续放缓。\n' +
-        '纽约证券交易所星期四结束，道琼斯工业指数（琼斯）上涨0.30%，至27.799点，77点，创下1896以来的新高。同样意义上，纳斯达克收盘值为0.67，至7.57点15点，创下历史新高。\n' +
-        '在汇率水平上，今天欧元在法兰克福外汇市场低开，报10968美元，周四为10975美元\n' +
-        '是 啊。布伦特2020年4月交货的石油桶今日低开，伦敦洲际交易所期货（ICE）报58,16美元，周四报58,16美元，周二报53,96美元，为2018年12月26日以来最低。',
+      content: '',
+      content_translate: '',
       form: {
-        emotion: [],
-        position: '',
-        eventSubject: '',
-        theme: '',
-        type: '',
+        emotion1: [],
+        emotion2: [],
+        position: [],
+        subject: [],
+        isChina: [],
+        type: [],
         emotion_basis: ''
       },
-      currentNo: 253,
+      emotionBadge: {
+        'agreeable': 0,
+        'believable': 0,
+        'good': 0,
+        'hated': 0,
+        'sad': 0,
+        'worried': 0,
+        'objective': 0
+      },
+      showEmotionBadge: false,
+      id: 'asd',
+      currentNo: 0,
       compareDialogVisible: false,
       formLabelWidth: '120px',
       formRules: {
@@ -189,39 +262,73 @@ export default {
   },
 
   watch: {
-    currentNo: function(oldVal, newVal) {
-      if (newVal % 2 === 0) {
-        this.compareDialogVisible = true
-      }
+    currentNo: function(newVal, oldVal) {
+      // if (newVal % 2 === 0) {
+      //   this.compareDialogVisible = true
+      // }
+      axios.get('/1-50/' + newVal + '.txt').then(response => {
+        let data = response.data.replace(/[\n\r]/g, '')
+        this.id = data.match('(.*?)(?:新闻)')[1]
+        data = data.match(/^(?:.*新闻标题（中）： )(.*)(?:新闻标题（英）)/)
+        if (data !== null) {
+          this.content_translate = data[1].replace('新闻内容（中）：', '\n')
+          console.log()
+        } else {
+          this.$message({
+            message: response.data,
+            type: 'error',
+            center: true,
+            duration: 5000
+          })
+        }
+      })
     }
   },
 
   methods: {
     onSubmit() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          // addAttendance(this.form).then(response => {
-          //   this.$message({
-          //     message: '打卡成功！',
-          //     type: 'success',
-          //     center: true,
-          //     duration: 3000
-          //   })
-          const _this = this
-          this.$message({
-            message: '打卡成功！',
-            type: 'success',
-            center: true,
-            duration: 3000
-          })
-          setTimeout(function() {
-            _this.$router.push('/annotation/list')
-          }, 1000)
-        } else {
-          console.log('输入数据不合法！')
-          return false
-        }
+      // this.$refs.form.validate(valid => {
+      //   if (valid) {
+      //     // addAttendance(this.form).then(response => {
+      //     //   this.$message({
+      //     //     message: '打卡成功！',
+      //     //     type: 'success',
+      //     //     center: true,
+      //     //     duration: 3000
+      //     //   })
+      //     const _this = this
+      //     this.$message({
+      //       message: '打卡成功！',
+      //       type: 'success',
+      //       center: true,
+      //       duration: 3000
+      //     })
+      //     setTimeout(function() {
+      //       _this.$router.push('/annotation/list')
+      //     }, 1000)
+      //   } else {
+      //     console.log('输入数据不合法！')
+      //     return false
+      //   }
+      // })
+      var result = this.id + '@@' +
+        this.form.position + '@@' +
+        this.form.emotion1 + '@@' +
+        (this.form.emotion2.length < 1 ? 'None' : this.form.emotion2) + '@@' +
+        this.form.emotion_basis.replace(/[\n\r]/g, '') + '@@' +
+        this.form.subject + '@@' +
+        this.form.type + '@@' +
+        this.form.isChina
+      console.log(result)
+      save(result).then(response => {
+        this.$message({
+          message: response.msg,
+          type: 'success',
+          center: true,
+          duration: 3000
+        })
       })
+      this.onNextNews()
     },
 
     onPreNews() {
@@ -230,13 +337,67 @@ export default {
 
     onNextNews() {
       this.currentNo += 1
+      this.form = {
+        emotion1: [],
+        emotion2: [],
+        position: [],
+        subject: [],
+        isChina: [],
+        type: [],
+        emotion_basis: ''
+      }
+      this.content_translate = ''
+      this.resetEmotionBadge()
+    },
+
+    onCopySuccess() {
+      this.$message({
+        message: '复制成功',
+        type: 'success'
+      })
+    },
+
+    onCopyError() {
+      this.$message({
+        message: '复制失败',
+        type: 'error'
+      })
+    },
+
+    emotionChange() {
+      const emotion = this.form.emotion1
+      const _this = this
+      let count = 1
+      this.resetEmotionBadge()
+      emotion.forEach(item => {
+        _this.$refs[item].hidden = false
+        _this.emotionBadge[item] = count
+        count += 1
+      })
+      console.log(this.form.emotion1)
+    },
+
+    resetEmotionBadge() {
+      this.emotionBadge = {
+        'agreeable': 0,
+        'believable': 0,
+        'good': 0,
+        'hated': 0,
+        'sad': 0,
+        'worried': 0,
+        'objective': 0
+      }
     }
+
   }
 }
 </script>
 
 <style scoped>
-.el-radio {
-  margin-bottom: 10px;
+/*.el-radio {*/
+/*  margin-bottom: 10px;*/
+/*}*/
+.badge-item {
+  margin-top: 8px;
 }
 </style>

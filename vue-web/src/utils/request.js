@@ -21,8 +21,7 @@ service.interceptors.request.use(
   },
   error => {
     // Do something with request error
-    console.log('发生错误')
-    console.log(error) // for debug
+    console.debug(error) // for debug
     Promise.reject(error)
   }
 )
@@ -63,12 +62,21 @@ service.interceptors.response.use(async(response) => {
   }
 },
 error => {
-  console.log('err' + error) // for debug
-  Message({
-    message: error.msg,
-    type: 'error',
-    duration: 5 * 1000
-  })
+  console.log(error.toString()) // for debug
+  if (error.toString().includes('Network Error')) {
+    Message({
+      message: '网络出错',
+      type: 'error',
+      duration: 5 * 1000
+    })
+  } else {
+    Message({
+      message: error.msg,
+      type: 'error',
+      duration: 5 * 1000
+    })
+  }
+
   return Promise.reject(error)
 }
 )
