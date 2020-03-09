@@ -11,6 +11,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SpringBootTest
 @Slf4j
 class AnnotationServerApplicationTests {
@@ -25,7 +28,9 @@ class AnnotationServerApplicationTests {
         user.setPassword(MD5Util.getMD5Upper("hezepeng"));
         user.setName("何泽鹏");
         user.setEmail("275688470@qq.com");
-        user.setRole("admin");
+        List<String> role = new ArrayList<>();
+        role.add("admin");
+        user.setRole(role);
         mongoTemplate.insert(user);
         log.info(user.getUserId().toString());
 

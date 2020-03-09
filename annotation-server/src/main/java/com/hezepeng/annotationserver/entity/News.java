@@ -95,7 +95,6 @@ public class News {
     private List<String> news_language;
 
     // 新闻翻译-英文
-    private String news_translate_en;
 
     private String news_content_translate_en;
 
@@ -106,6 +105,53 @@ public class News {
     private String news_title_translate_cn;
 
     private Integer news_no;
+
+    /**
+     * 标注人 1 的数据
+     */
+    private Integer user_id_1;
+
+    private List<String> news_emotion_1;
+
+    private String news_position_1;
+
+    private String news_subject_1;
+
+    private String news_type_1;
+
+    private boolean news_about_china_1;
+
+    private String news_emotion_basis_1;
+
+    private Date news_annotation_create_time_1;
+
+    private boolean news_delete_1;
+
+    /**
+     * 标注人 2 的数据
+     */
+    private Integer user_id_2;
+
+    private List<String> news_emotion_2;
+
+    private String news_position_2;
+
+    private String news_subject_2;
+
+    private String news_type_2;
+
+    private boolean news_about_china_2;
+
+    private String news_emotion_basis_2;
+
+    private Date news_annotation_create_time_2;
+
+    private boolean news_delete_2;
+
+    /**
+     * 标注状态
+     */
+    private Integer news_state;
 
     @PersistenceConstructor
     public News(ObjectId _id, String news_title, List<Author> news_author, String news_detail_url, String news_category, String news_abstract, String news_content, String news_publish_time, String news_time_zone, Integer news_publish_timestamp, Date news_publish_beijing_time, Date news_crawler_time, String news_place, List<Tag> news_tags, String news_source_name, String news_source_url, String news_country, String news_website_name, String news_website_url, List<String> news_language, String news_translate_en, String news_content_translate_en, String news_title_translate_en, String news_content_translate_cn, String news_title_translate_cn, Integer news_no) {
@@ -130,7 +176,6 @@ public class News {
         this.news_website_name = news_website_name;
         this.news_website_url = news_website_url;
         this.news_language = news_language;
-        this.news_translate_en = news_translate_en;
         this.news_content_translate_en = news_content_translate_en;
         this.news_title_translate_en = news_title_translate_en;
         this.news_content_translate_cn = news_content_translate_cn;

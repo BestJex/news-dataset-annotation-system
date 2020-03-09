@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author: Hezepeng
@@ -51,11 +52,11 @@ public class User {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastLoginTime;
 
-    private String role;
+    private List<String> role;
 
     private String avatar;
 
-    public User(String username, String password, String role) {
+    public User(String username, String password, List<String> role) {
         this.username = username;
         this.password = password;
         this.role = role;
@@ -66,7 +67,7 @@ public class User {
     }
 
     @PersistenceConstructor
-    public User(Integer userId, String openId, String username, String password, String name, String email, Date lastLoginTime, String role, String avatar) {
+    public User(Integer userId, String openId, String username, String password, String name, String email, Date lastLoginTime, List<String> role, String avatar) {
         this.userId = userId;
         this.openId = openId;
         this.username = username;

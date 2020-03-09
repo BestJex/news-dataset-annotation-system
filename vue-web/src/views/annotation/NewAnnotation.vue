@@ -193,7 +193,7 @@
         <el-col :span="12">
           <div style="color: dodgerblue;font-size: 16px;margin-bottom: 5px">上一篇新闻</div>
           <el-input
-            v-model="content_translate"
+            v-model="compare1"
             style="margin-bottom: 20px"
             type="textarea"
             :rows="15"
@@ -203,7 +203,7 @@
         <el-col :span="12">
           <div style="color: dodgerblue;font-size: 16px;margin-bottom: 5px">当前新闻</div>
           <el-input
-            v-model="content_translate"
+            v-model="compare2"
             type="textarea"
             :rows="15"
             placeholder="请输入内容"
@@ -219,7 +219,7 @@
 </template>
 
 <script>
-import { Message } from 'element-ui'
+
 import axios from 'axios'
 import { save } from '@/api/login'
 
@@ -230,6 +230,8 @@ export default {
     return {
       content: '',
       content_translate: '',
+      compare1: '',
+      compare2: '',
       form: {
         emotion1: [],
         emotion2: [],
@@ -263,15 +265,19 @@ export default {
 
   watch: {
     currentNo: function(newVal, oldVal) {
-      // if (newVal % 2 === 0) {
-      //   this.compareDialogVisible = true
-      // }
+
       axios.get('/1-50/' + newVal + '.txt').then(response => {
         let data = response.data.replace(/[\n\r]/g, '')
         this.id = data.match('(.*?)(?:新闻)')[1]
         data = data.match(/^(?:.*新闻标题（中）： )(.*)(?:新闻标题（英）)/)
         if (data !== null) {
           this.content_translate = data[1].replace('新闻内容（中）：', '\n')
+          if (newVal % 2 === 0) {
+            this.compare2 = this.content_translate
+            this.compareDialogVisible = true
+          } else {
+            this.compare1 = this.content_translate
+          }
           console.log()
         } else {
           this.$message({
@@ -282,6 +288,9 @@ export default {
           })
         }
       })
+      if (newVal % 2 === 0) {
+        this.compareDialogVisible = true
+      }
     }
   },
 
