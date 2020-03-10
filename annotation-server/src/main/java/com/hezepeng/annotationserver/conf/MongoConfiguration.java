@@ -98,7 +98,6 @@ public class MongoConfiguration {
 
         @Override
         public Date convert(String source) {
-            System.out.println(source);
             return source == null ? null : DateTimeUtil.strToDate(source);
         }
     }

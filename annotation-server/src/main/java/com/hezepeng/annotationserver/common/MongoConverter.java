@@ -23,7 +23,6 @@ public class MongoConverter implements Converter<String, Tag>{
 
     @Override
     public Tag convert(String s) {
-        System.out.println(s);
         return null;
     }
 

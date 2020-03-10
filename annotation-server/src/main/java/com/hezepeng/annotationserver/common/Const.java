@@ -19,7 +19,7 @@ public class Const {
     /**
      * token有效期 3600秒
      */
-    public static final Long TOKEN_VALID_TIME = 3600000L;
+    public static final Long TOKEN_VALID_TIME = 15*3600000L;
 
     /**
      * token secret

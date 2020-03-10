@@ -1,18 +1,16 @@
 import request from '@/utils/request'
 
-export function addAnnotation(annotation) {
+export function saveAnnotation(annotation) {
   return request({
-    url: '/annotation/add',
+    url: '/api/annotation/add',
     method: 'post',
-    data: {
-      annotation
-    }
+    data: annotation
   })
 }
 
 export function updateAnnotation(annotation) {
   return request({
-    url: '/annotation/update',
+    url: '/api/annotation/update',
     method: 'post',
     data: {
       annotation
@@ -22,7 +20,7 @@ export function updateAnnotation(annotation) {
 
 export function deleteAnnotation(annotation) {
   return request({
-    url: '/annotation/delete',
+    url: '/api/annotation/delete',
     method: 'post',
     data: {
       annotation
@@ -30,10 +28,23 @@ export function deleteAnnotation(annotation) {
   })
 }
 
-export function getAnnotation(no) {
+export function getAnnotationIdList() {
   return request({
-    url: '/annotation/get',
-    method: 'get',
-    params: { no }
+    url: '/api/annotation/getAnnotationIdList',
+    method: 'get'
+  })
+}
+
+export function getAnnotation(id) {
+  return request({
+    url: '/api/annotation/get/' + id,
+    method: 'get'
+  })
+}
+
+export function initMongo() {
+  return request({
+    url: '/api/mongo/init',
+    method: 'get'
   })
 }

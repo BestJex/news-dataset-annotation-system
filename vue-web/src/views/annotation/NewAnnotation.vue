@@ -2,8 +2,8 @@
   <div>
     <el-row style="padding: 20px">
       <el-col :span="12">
-        <span style="font-size: 14px">标注进度 - {{ currentNo }}/100</span>
-        <el-progress :text-inside="true" :stroke-width="5" :percentage="currentNo" />
+        <span style="font-size: 14px">标注进度 - {{ currentNo }}/{{ totalNo }}</span>
+        <el-progress :text-inside="true" :stroke-width="5" :percentage="percentage" />
       </el-col>
       <el-col :span="12">
         <el-button-group style="float:right;">
@@ -18,43 +18,51 @@
           <el-tab-pane label="翻译">
             <div style="margin-bottom: 10px">
               <span style="color: dodgerblue;font-size: 14px;">
-                _id :
+                _id:
                 <el-tooltip class="item" effect="dark" content="点击复制" placement="right-end">
                   <a
-                    v-clipboard:copy="id"
+                    v-clipboard:copy="news['id']"
                     v-clipboard:success="onCopySuccess"
                     v-clipboard:error="onCopyError"
                     style="text-underline: none"
-                  >{{ id }}</a>
+                  >{{ news['id'] }}</a>
                 </el-tooltip>
+                时间:
+                {{new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
+                国家:
+                {{ news['news_country'] }}
               </span>
             </div>
             <el-input
-              v-model="content_translate"
+              v-model="news['news_content_translate_cn']"
               type="textarea"
-              :rows="25"
+              :rows="35"
               placeholder="请输入内容"
             />
           </el-tab-pane>
           <el-tab-pane label="原文">
             <div style="margin-bottom: 10px">
               <span style="color: dodgerblue;font-size: 14px;">
-                _id :
+                _id:
                 <el-tooltip class="item" effect="dark" content="点击复制" placement="right-end">
                   <a
-                    v-clipboard:copy="id"
+                    v-clipboard:copy="news['id']"
                     v-clipboard:success="onCopySuccess"
                     v-clipboard:error="onCopyError"
                     style="text-underline: none"
-                  >{{ id }}</a>
+                  >{{ news['id'] }}</a>
                 </el-tooltip>
+                时间:
+                {{new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
+                国家:
+                {{ news['news_country'] }}
               </span>
             </div>
             <el-input
-              v-model="content"
+              v-model="news['news_content_translate_en']"
               style="margin-bottom: 20px"
               type="textarea"
-              :rows="25"
+              :rows="35"
               placeholder="请输入内容"
             />
           </el-tab-pane>
@@ -65,7 +73,7 @@
       <el-col :span="12">
         <el-form ref="form" :model="form" :rules="formRules" label-width="80px">
           <el-form-item label="情感">
-            <el-checkbox-group v-model="form.emotion1" :max="2" @change="emotionChange()">
+            <el-checkbox-group v-model="form.news_emotion" :max="2" @change="emotionChange()">
               <el-checkbox style="width: 100%;" label="agreeable">
                 尊敬、赞扬、认同
                 <el-badge
@@ -132,7 +140,7 @@
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="立场">
-            <el-checkbox-group v-model="form.position" :max="1">
+            <el-checkbox-group v-model="form.news_position" :max="1">
               <el-checkbox label="positive">积极</el-checkbox>
               <el-checkbox label="neutral">中级</el-checkbox>
               <el-checkbox label="negative">消极</el-checkbox>
@@ -143,13 +151,13 @@
             <!--              <el-option label="中国" value="yes" />-->
             <!--              <el-option label="非中国" value="no" />-->
             <!--            </el-select>-->
-            <el-checkbox-group v-model="form.isChina" :max="1">
-              <el-checkbox label="yes">中国</el-checkbox>
-              <el-checkbox label="no">非中国</el-checkbox>
+            <el-checkbox-group v-model="form.news_about_china" :max="1">
+              <el-checkbox label="true">中国</el-checkbox>
+              <el-checkbox label="false">非中国</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="主题">
-            <el-checkbox-group v-model="form.subject" :max="1">
+            <el-checkbox-group v-model="form.news_subject" :max="1">
               <el-checkbox label="politics">政治</el-checkbox>
               <el-checkbox label="society">社会</el-checkbox>
               <el-checkbox label="technology">科技</el-checkbox>
@@ -171,18 +179,18 @@
             <!--            </el-radio-group>-->
           </el-form-item>
           <el-form-item label="类型">
-            <el-checkbox-group v-model="form.type" :max="1">
+            <el-checkbox-group v-model="form.news_type" :max="1">
               <el-checkbox label="fact">事实</el-checkbox>
               <el-checkbox label="essay">短文</el-checkbox>
               <el-checkbox label="interview">采访</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="情感依据">
-            <el-input v-model="form.emotion_basis" type="textarea" :rows="6" />
+            <el-input v-model="form.news_emotion_basis" type="textarea" :rows="6" />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onSubmit">立即提交</el-button>
-            <el-button>重置</el-button>
+            <el-button @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -220,26 +228,23 @@
 
 <script>
 
-import axios from 'axios'
-import { save } from '@/api/login'
+import { getAnnotation, getAnnotationIdList, initMongo, saveAnnotation } from '@/api/annotation'
 
 export default {
   name: 'NewArticle',
 
   data() {
     return {
-      content: '',
-      content_translate: '',
+      news: {},
       compare1: '',
       compare2: '',
       form: {
-        emotion1: [],
-        emotion2: [],
-        position: [],
-        subject: [],
-        isChina: [],
-        type: [],
-        emotion_basis: ''
+        news_emotion: [],
+        news_position: [],
+        news_subject: [],
+        news_about_china: [],
+        news_type: [],
+        news_emotion_basis: ''
       },
       emotionBadge: {
         'agreeable': 0,
@@ -251,8 +256,9 @@ export default {
         'objective': 0
       },
       showEmotionBadge: false,
-      id: 'asd',
+      ids: [],
       currentNo: 0,
+      totalNo: 1,
       compareDialogVisible: false,
       formLabelWidth: '120px',
       formRules: {
@@ -263,22 +269,30 @@ export default {
     }
   },
 
+  mounted: function() {
+    initMongo()
+    getAnnotationIdList().then(response => {
+      this.ids = response.data
+      this.totalNo = response.data.length
+      for (let i = 0; i < this.ids.length; i++) {
+        if (this.ids[i] === 0) {
+          this.currentNo = i - 1
+        }
+      }
+    })
+  },
   watch: {
     currentNo: function(newVal, oldVal) {
-
-      axios.get('/1-50/' + newVal + '.txt').then(response => {
-        let data = response.data.replace(/[\n\r]/g, '')
-        this.id = data.match('(.*?)(?:新闻)')[1]
-        data = data.match(/^(?:.*新闻标题（中）： )(.*)(?:新闻标题（英）)/)
+      getAnnotation(this.ids[newVal]['id']).then(response => {
+        const data = response.data
+        this.news = data
+        console.log(data)
         if (data !== null) {
-          this.content_translate = data[1].replace('新闻内容（中）：', '\n')
           if (newVal % 2 === 0) {
-            this.compare2 = this.content_translate
-            this.compareDialogVisible = true
+            this.compare2 = data['news_content_translate_cn']
           } else {
-            this.compare1 = this.content_translate
+            this.compare1 = data['news_content_translate_cn']
           }
-          console.log()
         } else {
           this.$message({
             message: response.data,
@@ -288,9 +302,12 @@ export default {
           })
         }
       })
-      if (newVal % 2 === 0) {
-        this.compareDialogVisible = true
-      }
+    }
+  },
+
+  computed: {
+    percentage: function() {
+      return this.currentNo / this.totalNo * 100
     }
   },
 
@@ -320,24 +337,30 @@ export default {
       //     return false
       //   }
       // })
-      var result = this.id + '@@' +
-        this.form.position + '@@' +
-        this.form.emotion1 + '@@' +
-        (this.form.emotion2.length < 1 ? 'None' : this.form.emotion2) + '@@' +
-        this.form.emotion_basis.replace(/[\n\r]/g, '') + '@@' +
-        this.form.subject + '@@' +
-        this.form.type + '@@' +
-        this.form.isChina
-      console.log(result)
-      save(result).then(response => {
+      const currentNo = this.currentNo
+      const annotation = {
+        _id: this.ids[this.currentNo]['id'],
+        news_emotion: this.form.news_emotion,
+        news_position: this.form.news_position[0],
+        news_subject: this.form.news_subject[0],
+        news_about_china: this.form.news_about_china[0],
+        news_type: this.form.news_type[0],
+        news_emotion_basis: this.form.news_emotion_basis
+      }
+      console.log(annotation)
+      saveAnnotation(annotation).then(response => {
         this.$message({
           message: response.msg,
           type: 'success',
           center: true,
           duration: 3000
         })
+        if (currentNo % 2 === 0) {
+          this.compareDialogVisible = true
+        }
+      }).then(() => {
+        this.onNextNews()
       })
-      this.onNextNews()
     },
 
     onPreNews() {
@@ -346,16 +369,19 @@ export default {
 
     onNextNews() {
       this.currentNo += 1
-      this.form = {
-        emotion1: [],
-        emotion2: [],
-        position: [],
-        subject: [],
-        isChina: [],
-        type: [],
-        emotion_basis: ''
-      }
+      this.resetForm()
       this.content_translate = ''
+    },
+
+    resetForm() {
+      this.form = {
+        news_emotion: [],
+        news_position: [],
+        news_subject: [],
+        news_about_china: [],
+        news_type: [],
+        news_emotion_basis: ''
+      }
       this.resetEmotionBadge()
     },
 
@@ -374,7 +400,7 @@ export default {
     },
 
     emotionChange() {
-      const emotion = this.form.emotion1
+      const emotion = this.form.news_emotion
       const _this = this
       let count = 1
       this.resetEmotionBadge()
@@ -383,7 +409,6 @@ export default {
         _this.emotionBadge[item] = count
         count += 1
       })
-      console.log(this.form.emotion1)
     },
 
     resetEmotionBadge() {

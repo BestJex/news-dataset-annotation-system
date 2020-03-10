@@ -33,7 +33,9 @@ export function parseTime(time, cFormat) {
   const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
-    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value ] }
+    if (key === 'a') {
+      return ['日', '一', '二', '三', '四', '五', '六'][value]
+    }
     if (result.length > 0 && value < 10) {
       value = '0' + value
     }
@@ -123,7 +125,7 @@ export function deepCopy(obj) {
  * 关闭当前浏览器窗口
  */
 export function closeWindow() {
-  const userAgent = navigator.userAgent;
+  const userAgent = navigator.userAgent
   if (userAgent.indexOf('Firefox') !== -1 || userAgent.indexOf('Chrome') !== -1) {
     location.href = 'about:blank'
   } else {
@@ -132,3 +134,27 @@ export function closeWindow() {
   }
   window.close()
 }
+
+/**
+ * 时间戳转日期时间
+ */
+// eslint-disable-next-line no-extend-native
+Date.prototype.Format = function(fmt) {
+  const o = {
+    'M+': this.getMonth() + 1, // 月份
+    'd+': this.getDate(), // 日
+    'h+': this.getHours(), // 小时
+    'm+': this.getMinutes(), // 分
+    's+': this.getSeconds(), // 秒
+    'q+': Math.floor((this.getMonth() + 3) / 3), // 季度
+    'S': this.getMilliseconds() // 毫秒
+  }
+  if (/(y+)/.test(fmt)) {
+    fmt = fmt.replace(RegExp.$1, (this.getFullYear() + ''))
+  }
+  for (const k in o) {
+    if (new RegExp('(' + k + ')').test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)))
+  }
+  return fmt
+}
+

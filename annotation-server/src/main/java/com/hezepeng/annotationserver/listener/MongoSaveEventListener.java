@@ -34,6 +34,9 @@ public class MongoSaveEventListener extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onBeforeConvert(BeforeConvertEvent<Object> event) {
+        if (event.getSource().getClass() != User.class) {
+            return;
+        }
         User user = (User) event.getSource();
         // 如果没有userId 相当于是新插入对象 需要一个自增id 有userId说明是更新 不是插入
         // 加上这个判断是为了在调用mongoTemplate.save()更新user对象时，不会被赋值新的
@@ -55,6 +58,7 @@ public class MongoSaveEventListener extends AbstractMongoEventListener<Object> {
 
     /**
      * 获取指定collName的最新的自增主键
+     *
      * @param collName MongoDB的集合名
      * @return
      */

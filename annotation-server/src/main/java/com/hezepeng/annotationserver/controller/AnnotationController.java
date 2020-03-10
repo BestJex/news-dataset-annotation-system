@@ -1,12 +1,12 @@
 package com.hezepeng.annotationserver.controller;
 
 import com.hezepeng.annotationserver.common.ServerResponse;
+import com.hezepeng.annotationserver.entity.News;
+import com.hezepeng.annotationserver.entity.NewsAnnotation;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 
 @RestController
+@RequestMapping("/api/annotation")
 public class AnnotationController {
     @Autowired
     private AnnotationService annotationService;
@@ -26,8 +27,19 @@ public class AnnotationController {
         return annotationService.getNewsAnnotationList(request);
     }
 
-    @GetMapping("/annotation/{id}")
+    @PostMapping("/add")
+    public ServerResponse addNewsAnnotation(HttpServletRequest request, @RequestBody NewsAnnotation annotation) {
+        System.out.println(annotation);
+        return annotationService.addNewsAnnotation(request, annotation);
+    }
+
+    @GetMapping("/get/{id}")
     public ServerResponse getOneNewsAnnotation(@PathVariable String id) {
         return annotationService.getOneNewsAnnotationById(id);
+    }
+
+    @GetMapping("/getAnnotationIdList")
+    public ServerResponse getAnnotationIdList() {
+        return annotationService.getAnnotationIdList();
     }
 }
