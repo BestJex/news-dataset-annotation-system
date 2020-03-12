@@ -19,6 +19,8 @@ public interface AnnotationService {
 
     ServerResponse<List<News>> getNewsAnnotationList(HttpServletRequest request);
 
+    ServerResponse<List<News>> getAnnotationListByUsername(HttpServletRequest request);
+
     ServerResponse<News> getOneNewsAnnotationById(String id);
 
     ServerResponse<List<NewsBo>> getAnnotationIdList();

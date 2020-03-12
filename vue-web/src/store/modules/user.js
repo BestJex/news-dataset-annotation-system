@@ -1,5 +1,5 @@
 import { login, logout, getUserInfo } from '@/api/login'
-import { getToken, setToken, removeToken } from '@/utils/authorize'
+import { getToken, setToken, removeToken, setUsername, removeUsername } from '@/utils/authorize'
 import { Message } from 'element-ui'
 
 const user = {
@@ -7,7 +7,8 @@ const user = {
     token: getToken(),
     name: '',
     avatar: '',
-    roles: []
+    roles: [],
+    username: ''
   },
 
   mutations: {
@@ -22,6 +23,9 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_USERNAME: (state, username) => {
+      state.username = username
     }
   },
 
@@ -39,7 +43,9 @@ const user = {
               duration: 3 * 1000
             })
             setToken(data.token)
+            setUsername(username)
             commit('SET_TOKEN', data.token)
+            commit('SET_USERNAME', username)
             resolve()
           })
           .catch(error => {
@@ -80,6 +86,7 @@ const user = {
             commit('SET_TOKEN', '')
             commit('SET_ROLES', [])
             removeToken()
+            removeUsername()
             resolve()
           })
           .catch(error => {
@@ -95,6 +102,7 @@ const user = {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
         removeToken()
+        removeUsername()
         resolve()
       })
     }

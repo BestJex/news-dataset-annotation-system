@@ -9,6 +9,7 @@ import com.hezepeng.annotationserver.entity.bo.NewsBo;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import com.hezepeng.annotationserver.util.TokenUtil;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,16 @@ public class AnnotationServiceImpl implements AnnotationService {
             List<News> data = annotationRepository.findAllAnnotationNewsList();
             return ServerResponse.createBySuccess(data);
 
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    @Override
+    public ServerResponse<List<News>> getAnnotationListByUsername(HttpServletRequest request) {
+        try {
+            List<News> data = annotationRepository.findAllAnnotationNewsList();
+            return ServerResponse.createBySuccess(data);
         } catch (Exception ex) {
             return ServerResponse.createByErrorMessage(ex.getMessage());
         }
@@ -73,10 +84,25 @@ public class AnnotationServiceImpl implements AnnotationService {
         try {
             String username = TokenUtil.getUsernameByRequest(request);
             String id = annotation.get_id();
-            System.out.println(username + " " + id);
+            boolean isUpdate = false;
             News news = annotationRepository.findOneNewsById(id);
             int index = news.getUsers().indexOf(username);
             news.setNews_state(1);
+            System.out.println(news);
+            // 检查是更新还是新增
+            LinkedList<Boolean> done = news.getNews_annotation_done();
+            if (done.get(index)!=null) {
+                // 更新标注
+                isUpdate = true;
+            }else{
+                // 新增标注，设置成当前用户已标注
+                done.set(index, true);
+                news.setNews_annotation_done(done);
+            }
+            // 创建时间
+            LinkedList<Date> date = news.getNews_annotation_create_time();
+            date.set(index, new Date());
+            news.setNews_annotation_create_time(date);
             // 情感
             LinkedList<LinkedList<String>> emotion = news.getNews_emotion();
             emotion.set(index, annotation.getNews_emotion());
@@ -102,7 +128,11 @@ public class AnnotationServiceImpl implements AnnotationService {
             basis.set(index, annotation.getNews_emotion_basis());
             news.setNews_emotion_basis(basis);
             mongoTemplate.save(news);
-            return ServerResponse.createBySuccess();
+            if(isUpdate){
+                return ServerResponse.createBySuccessMessage("标注已更新");
+            }else {
+                return ServerResponse.createBySuccessMessage("标注已添加");
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             return ServerResponse.createByErrorMessage(ex.getMessage());

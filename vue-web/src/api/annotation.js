@@ -8,6 +8,14 @@ export function saveAnnotation(annotation) {
   })
 }
 
+export function getAnnotationListByUsername(username) {
+  return request({
+    url: '/api/annotation/list',
+    method: 'get',
+    params: { username }
+  })
+}
+
 export function updateAnnotation(annotation) {
   return request({
     url: '/api/annotation/update',

@@ -79,11 +79,13 @@ public class News {
     private LinkedList<String> news_emotion_basis;
     private LinkedList<Date> news_annotation_create_time;
     private LinkedList<Boolean> news_delete;
+    private LinkedList<Boolean> news_annotation_done;
 
     /**
      * 标注状态
      */
     private Integer news_state;
+
 
     private Boolean init = false;
 

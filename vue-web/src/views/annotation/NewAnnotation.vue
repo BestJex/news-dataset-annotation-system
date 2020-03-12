@@ -2,7 +2,7 @@
   <div>
     <el-row style="padding: 20px">
       <el-col :span="12">
-        <span style="font-size: 14px">标注进度 - {{ currentNo }}/{{ totalNo }}</span>
+        <span style="font-size: 14px">标注进度 - {{ currentNo+1 }}/{{ totalNo }}</span>
         <el-progress :text-inside="true" :stroke-width="5" :percentage="percentage" />
       </el-col>
       <el-col :span="12">
@@ -229,6 +229,7 @@
 <script>
 
 import { getAnnotation, getAnnotationIdList, initMongo, saveAnnotation } from '@/api/annotation'
+import { getUsername } from '@/utils/authorize'
 
 export default {
   name: 'NewArticle',
@@ -265,43 +266,64 @@ export default {
         title: [{ required: true, trigger: 'blur', message: '姓名不能为空' }],
         category: [{ required: true, trigger: 'blur', message: '性别不能为空' }],
         label: [{ required: true, trigger: 'blur', message: '打卡类型不能为空' }]
-      }
+      },
+      username: ''
     }
   },
 
   mounted: function() {
+    this.username = getUsername()
     initMongo()
     getAnnotationIdList().then(response => {
       this.ids = response.data
       this.totalNo = response.data.length
+      console.log(this.ids)
       for (let i = 0; i < this.ids.length; i++) {
-        if (this.ids[i] === 0) {
-          this.currentNo = i - 1
+        if (this.ids[i].state === 0) {
+          this.currentNo = i
+          break
         }
       }
     })
   },
+
   watch: {
-    currentNo: function(newVal, oldVal) {
-      getAnnotation(this.ids[newVal]['id']).then(response => {
-        const data = response.data
-        this.news = data
-        console.log(data)
-        if (data !== null) {
-          if (newVal % 2 === 0) {
-            this.compare2 = data['news_content_translate_cn']
-          } else {
-            this.compare1 = data['news_content_translate_cn']
-          }
-        } else {
-          this.$message({
-            message: response.data,
-            type: 'error',
-            center: true,
-            duration: 5000
-          })
+    currentNo: {
+      handler(newVal, oldVal) {
+        if (newVal === -1) {
+          return
         }
-      })
+        const username = this.username
+        this.resetForm()
+        getAnnotation(this.ids[newVal]['id']).then(response => {
+          const data = response.data
+          this.news = data
+          if (data !== null) {
+            if (newVal % 2 === 0) {
+              this.compare2 = data['news_content_translate_cn']
+            } else {
+              this.compare1 = data['news_content_translate_cn']
+            }
+            const index = data['users'].indexOf(username)
+            if (index >= 0 && data['news_position'][index] != null) {
+              this.form.news_emotion = data['news_emotion'][index]
+              this.form.news_position = [data['news_position'][index]]
+              this.form.news_subject = [data['news_subject'][index]]
+              this.form.news_type = [data['news_type'][index]]
+              this.form.news_about_china = [data['news_about_china'][index]]
+              this.form.news_emotion_basis = data['news_emotion_basis'][index]
+            }
+          } else {
+            this.$message({
+              message: response.data,
+              type: 'error',
+              center: true,
+              duration: 5000
+            })
+          }
+        })
+      },
+      immediate: false
     }
   },
 
@@ -364,13 +386,27 @@ export default {
     },
 
     onPreNews() {
-      this.currentNo -= 1
+      if (this.currentNo === 0) {
+        this.$message({
+          message: '已经是第一篇了！',
+          type: 'error'
+        })
+      } else {
+        this.currentNo -= 1
+        this.content_translate = ''
+      }
     },
 
     onNextNews() {
-      this.currentNo += 1
-      this.resetForm()
-      this.content_translate = ''
+      if (this.currentNo === this.totalNo - 1) {
+        this.$message({
+          message: '已经是最后一篇了！',
+          type: 'error'
+        })
+      } else {
+        this.currentNo += 1
+        this.content_translate = ''
+      }
     },
 
     resetForm() {

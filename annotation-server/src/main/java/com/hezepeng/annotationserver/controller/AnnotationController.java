@@ -22,8 +22,13 @@ public class AnnotationController {
     @Autowired
     private AnnotationService annotationService;
 
-    @GetMapping("/list")
+    @GetMapping("/getNewsAnnotationList")
     public ServerResponse getNewsAnnotationList(HttpServletRequest request) {
+        return annotationService.getNewsAnnotationList(request);
+    }
+
+    @GetMapping("/list")
+    public ServerResponse GetAnnotationList(HttpServletRequest request) {
         return annotationService.getNewsAnnotationList(request);
     }
 
