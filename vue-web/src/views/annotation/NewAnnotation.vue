@@ -8,7 +8,8 @@
       <el-col :span="12">
         <el-button-group style="float:right;">
           <el-button type="primary" icon="el-icon-arrow-left" @click="onPreNews">上一篇</el-button>
-          <el-button type="primary" @click="onNextNews">下一篇<i class="el-icon-arrow-right el-icon--right" /></el-button>
+          <el-button type="primary" @click="onNextNews" :disabled="nextNewsDisabled">下一篇<i
+            class="el-icon-arrow-right el-icon--right" /></el-button>
         </el-button-group>
       </el-col>
     </el-row>
@@ -259,13 +260,16 @@ export default {
       showEmotionBadge: false,
       ids: [],
       currentNo: 0,
+      doneNo: 0,
       totalNo: 1,
       compareDialogVisible: false,
       formLabelWidth: '120px',
       formRules: {
-        title: [{ required: true, trigger: 'blur', message: '姓名不能为空' }],
-        category: [{ required: true, trigger: 'blur', message: '性别不能为空' }],
-        label: [{ required: true, trigger: 'blur', message: '打卡类型不能为空' }]
+        news_emotion: [{ required: true, trigger: 'blur', message: '至少标注一个情感' }],
+        news_position: [{ required: true, trigger: 'blur', message: '立场标注不能为空' }],
+        news_type: [{ required: true, trigger: 'blur', message: '类型标注不能为空' }],
+        news_subject: [{ required: true, trigger: 'blur', message: '主题标注不能为空' }],
+        news_about_china: [{ required: true, trigger: 'blur', message: '请选择是否有关中国' }]
       },
       username: ''
     }
@@ -281,6 +285,7 @@ export default {
       for (let i = 0; i < this.ids.length; i++) {
         if (this.ids[i].state === 0) {
           this.currentNo = i
+          this.doneNo = i - 1
           break
         }
       }
@@ -290,7 +295,7 @@ export default {
   watch: {
     currentNo: {
       handler(newVal, oldVal) {
-        if (newVal === -1) {
+        if (this.ids.length === 0) {
           return
         }
         const username = this.username
@@ -305,13 +310,14 @@ export default {
               this.compare1 = data['news_content_translate_cn']
             }
             const index = data['users'].indexOf(username)
-            if (index >= 0 && data['news_position'][index] != null) {
+            if (index >= 0 && data['news_annotation_done'][index] === true) {
               this.form.news_emotion = data['news_emotion'][index]
               this.form.news_position = [data['news_position'][index]]
               this.form.news_subject = [data['news_subject'][index]]
               this.form.news_type = [data['news_type'][index]]
               this.form.news_about_china = [data['news_about_china'][index]]
               this.form.news_emotion_basis = data['news_emotion_basis'][index]
+              this.emotionChange()
             }
           } else {
             this.$message({
@@ -323,13 +329,16 @@ export default {
           }
         })
       },
-      immediate: false
+      immediate: true
     }
   },
 
   computed: {
     percentage: function() {
       return this.currentNo / this.totalNo * 100
+    },
+    nextNewsDisabled: function() {
+      return this.currentNo > this.doneNo
     }
   },
 
@@ -369,7 +378,6 @@ export default {
         news_type: this.form.news_type[0],
         news_emotion_basis: this.form.news_emotion_basis
       }
-      console.log(annotation)
       saveAnnotation(annotation).then(response => {
         this.$message({
           message: response.msg,
@@ -381,6 +389,7 @@ export default {
           this.compareDialogVisible = true
         }
       }).then(() => {
+        this.doneNo += 1
         this.onNextNews()
       })
     },
@@ -398,6 +407,13 @@ export default {
     },
 
     onNextNews() {
+      if (this.form.news_position[0] == null) {
+        this.$message({
+          message: '请先提交当前新闻',
+          type: 'error'
+        })
+        return
+      }
       if (this.currentNo === this.totalNo - 1) {
         this.$message({
           message: '已经是最后一篇了！',
