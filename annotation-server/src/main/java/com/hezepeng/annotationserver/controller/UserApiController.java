@@ -1,5 +1,6 @@
 package com.hezepeng.annotationserver.controller;
 
+import com.hezepeng.annotationserver.annotation.NeedAdminAuthorize;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.service.UserService;
@@ -51,5 +52,37 @@ public class UserApiController {
             return ServerResponse.createByErrorMessage("保存标签结果到文件出错");
         }
 
+    }
+
+    @RequestMapping(value = "register", method = RequestMethod.POST)
+    public ServerResponse register(@RequestBody User user) {
+        return userService.register(user);
+    }
+
+    @RequestMapping(value = "update", method = RequestMethod.POST)
+    public ServerResponse update(@RequestBody User user) {
+        return userService.updateUser(user);
+    }
+
+    @NeedAdminAuthorize
+    @RequestMapping(value = "delete", method = RequestMethod.POST)
+    public ServerResponse delete(HttpServletRequest request,@RequestBody User user) {
+        return userService.deleteUser(request, user.getUsername());
+    }
+
+    @NeedAdminAuthorize
+    @RequestMapping(value = "list", method = RequestMethod.GET)
+    public ServerResponse list(HttpServletRequest request) {
+        return userService.getAllUserTask(request);
+    }
+
+    @RequestMapping(value = "checkPassword", method = RequestMethod.POST)
+    public ServerResponse checkPassword(HttpServletRequest request, @RequestBody User user) {
+        return userService.checkPassword(request, user.getPassword());
+    }
+
+    @RequestMapping(value = "checkUsername", method = RequestMethod.POST)
+    public ServerResponse checkUsername(HttpServletRequest request, String username) {
+        return userService.checkPassword(request, username);
     }
 }

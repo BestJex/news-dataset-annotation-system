@@ -5,6 +5,7 @@ import com.hezepeng.annotationserver.dao.AnnotationRepository;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
 import com.hezepeng.annotationserver.entity.User;
+import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import com.hezepeng.annotationserver.util.TokenUtil;
@@ -12,6 +13,8 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -91,12 +94,12 @@ public class AnnotationServiceImpl implements AnnotationService {
             System.out.println(news);
             // 检查是更新还是新增
             LinkedList<Boolean> done = news.getNews_annotation_done();
-            if (done.get(index)!=null) {
+            if (done.get(index) != null) {
                 // 更新标注
                 isUpdate = true;
-            }else{
-                // 新增标注，设置成当前用户已标注
-                done.set(index, true);
+            } else {
+                // 新增标注，设置成当前用户已标注、未校验
+                done.set(index, false);
                 news.setNews_annotation_done(done);
             }
             // 创建时间
@@ -128,14 +131,50 @@ public class AnnotationServiceImpl implements AnnotationService {
             basis.set(index, annotation.getNews_emotion_basis());
             news.setNews_emotion_basis(basis);
             mongoTemplate.save(news);
-            if(isUpdate){
+            if (isUpdate) {
                 return ServerResponse.createBySuccessMessage("标注已更新");
-            }else {
+            } else {
                 return ServerResponse.createBySuccessMessage("标注已添加");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
             return ServerResponse.createByErrorMessage(ex.getMessage());
         }
+    }
+
+    @Override
+    public ServerResponse createTask(AnnotationTask task) {
+        List<AnnotationTask.UserTask> userTaskList = task.getUserTaskList();
+        int totalTaskCount = 0, userCount = 0;
+        for (int i = 0; i < userTaskList.size(); i++) {
+            totalTaskCount += userTaskList.get(i).getTaskCount();
+            userCount++;
+        }
+        Query query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(null)).limit(totalTaskCount);
+        List<News> newsList = annotationRepository.findAllAnnotationNewsList();
+        Queue<String> userQueue = new LinkedList<>();
+
+        userTaskList.forEach(userTask -> {
+            for (int i = 0; i < userTask.getTaskCount(); i++) {
+                userQueue.offer(userTask.getUsername());
+            }
+        });
+        int newsIndex = 0;
+        while (userQueue.peek() != null) {
+            newsIndex %= newsList.size();
+            LinkedList<String> users = newsList.get(newsIndex).getUsers();
+            if (users == null) {
+                users = new LinkedList<>();
+            }
+            if (users.size() < userCount) {
+                users.add(userQueue.poll());
+            }
+            newsIndex++;
+        }
+        newsList.forEach(news -> {
+            annotationRepository.initField(news);
+        });
+        return ServerResponse.createBySuccessMessage("任务初始化成功");
     }
 }

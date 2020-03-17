@@ -1,6 +1,7 @@
 package com.hezepeng.annotationserver.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hezepeng.annotationserver.annotation.AutoIncKey;
@@ -41,6 +42,7 @@ public class User {
      * 指定字段只在序列化时忽略、反序列化时保留
      * 该注解可以让对象序列号成json过程中过滤掉Password字段，但json反序列化成对象时依旧会生成Password字段
      */
+    @JsonIgnore
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 

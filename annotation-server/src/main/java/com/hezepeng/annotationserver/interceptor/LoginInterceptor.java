@@ -76,7 +76,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 查看该request方法的注解，是否需要管理员权限
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         NeedAdminAuthorize need = handlerMethod.getMethodAnnotation(NeedAdminAuthorize.class);
-        if (need != null && !user.getRole().equals(Const.ADMIN_ROLE)) {
+        if (need != null && !user.getRole().contains(Const.ADMIN_ROLE)) {
             sendErrorMsg(response, ResponseCode.NO_PERMISSION.getCode(), "没有足够的权限，无法操作");
             return false;
         }

@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: Hezepeng
@@ -59,10 +57,84 @@ public class UserServiceImpl implements UserService {
     public ServerResponse<User> getUserInfo(HttpServletRequest request) {
         Integer userId = TokenUtil.getUserIdFromRequest(request);
         User user = userRepository.selectUserById(userId);
-        if(user==null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"身份信息异常，请重新登陆!");
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "身份信息异常，请重新登陆!");
         }
         user.setPassword(null);
         return ServerResponse.createBySuccess(user);
     }
+
+    @Override
+    public ServerResponse checkPassword(HttpServletRequest request, String password) {
+        try {
+            Integer userId = TokenUtil.getUserIdFromRequest(request);
+            User user = userRepository.selectUserById(userId);
+            if (user.getPassword().equals(MD5Util.getMD5Upper(password))) {
+                return ServerResponse.createBySuccessMessage("密码验证成功");
+            } else {
+                return ServerResponse.createByErrorMessage("旧密码验证失败");
+            }
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    @Override
+    public ServerResponse deleteUser(HttpServletRequest request, String username) {
+        try {
+            User user = userRepository.selectUserById(TokenUtil.getUserIdFromRequest(request));
+            if (user.getUsername().equals(username)) {
+                return ServerResponse.createByErrorMessage("您无法删除自己");
+            }
+            if (!checkUsernameExist(username)) {
+                return ServerResponse.createByErrorMessage("要删除的用户不存在");
+            }
+            int effectRow = userRepository.deleteByUsername(username);
+            if (effectRow == 0) {
+                return ServerResponse.createByErrorMessage("删除用户失败");
+            }
+            return ServerResponse.createBySuccessMessage("删除用户成功");
+
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    private boolean checkUsernameExist(String username) {
+        return userRepository.selectUserByUsername(username) != null;
+    }
+
+    @Override
+    public ServerResponse updateUser(User user) {
+        try {
+            return ServerResponse.createBySuccess();
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    @Override
+    public ServerResponse register(User user) {
+        try {
+            if (StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getPassword())) {
+                return ServerResponse.createByErrorMessage("注册信息缺失");
+            }
+            user.setPassword(MD5Util.getMD5Upper(user.getPassword()));
+            userRepository.addUser(user);
+            return ServerResponse.createBySuccess();
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+    @Override
+    public ServerResponse getAllUserTask(HttpServletRequest request) {
+        try {
+            return ServerResponse.createBySuccess(userRepository.selectAllUserTask());
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage(ex.getMessage());
+        }
+    }
+
+
 }

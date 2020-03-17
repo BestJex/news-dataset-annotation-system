@@ -15,4 +15,15 @@ public interface UserService {
     ServerResponse<Map<String, String>> login(String username, String password);
 
     ServerResponse<User> getUserInfo(HttpServletRequest request);
+
+    ServerResponse checkPassword(HttpServletRequest request, String password);
+
+    ServerResponse deleteUser(HttpServletRequest request, String username);
+
+    ServerResponse updateUser(User user);
+
+    ServerResponse register(User user);
+
+    ServerResponse getAllUserTask(HttpServletRequest request);
+
 }

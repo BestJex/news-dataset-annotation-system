@@ -15,7 +15,7 @@
     </el-row>
     <el-row style="padding: 20px" :gutter="20">
       <el-col :span="12">
-        <el-tabs type="border-card">
+        <el-tabs type="border-card" v-loading="loading">
           <el-tab-pane label="翻译">
             <div style="margin-bottom: 10px">
               <span style="color: dodgerblue;font-size: 14px;">
@@ -259,7 +259,7 @@ export default {
       },
       showEmotionBadge: false,
       ids: [],
-      currentNo: 0,
+      currentNo: -1,
       doneNo: 0,
       totalNo: 1,
       compareDialogVisible: false,
@@ -271,7 +271,8 @@ export default {
         news_subject: [{ required: true, trigger: 'blur', message: '主题标注不能为空' }],
         news_about_china: [{ required: true, trigger: 'blur', message: '请选择是否有关中国' }]
       },
-      username: ''
+      username: '',
+      loading: true
     }
   },
 
@@ -300,7 +301,13 @@ export default {
         }
         const username = this.username
         this.resetForm()
+        this.$nextTick(() => {
+          this.loading = false
+        })
         getAnnotation(this.ids[newVal]['id']).then(response => {
+          this.$nextTick(() => { // 以服务的方式调用的 Loading 需要异步关闭
+            this.loading = false
+          })
           const data = response.data
           this.news = data
           if (data !== null) {
@@ -310,7 +317,7 @@ export default {
               this.compare1 = data['news_content_translate_cn']
             }
             const index = data['users'].indexOf(username)
-            if (index >= 0 && data['news_annotation_done'][index] === true) {
+            if (index >= 0 && data['news_annotation_done'][index] !== null) {
               this.form.news_emotion = data['news_emotion'][index]
               this.form.news_position = [data['news_position'][index]]
               this.form.news_subject = [data['news_subject'][index]]
@@ -335,6 +342,9 @@ export default {
 
   computed: {
     percentage: function() {
+      if (this.currentNo < 0) {
+        return 0
+      }
       return this.currentNo / this.totalNo * 100
     },
     nextNewsDisabled: function() {

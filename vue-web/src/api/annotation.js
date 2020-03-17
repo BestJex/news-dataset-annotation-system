@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function saveAnnotation(annotation) {
   return request({
-    url: '/api/annotation/add',
+    url: '/annotation/add',
     method: 'post',
     data: annotation
   })
@@ -10,7 +10,7 @@ export function saveAnnotation(annotation) {
 
 export function getAnnotationListByUsername(username) {
   return request({
-    url: '/api/annotation/list',
+    url: '/annotation/list',
     method: 'get',
     params: { username }
   })
@@ -18,7 +18,7 @@ export function getAnnotationListByUsername(username) {
 
 export function updateAnnotation(annotation) {
   return request({
-    url: '/api/annotation/update',
+    url: '/annotation/update',
     method: 'post',
     data: {
       annotation
@@ -28,7 +28,7 @@ export function updateAnnotation(annotation) {
 
 export function deleteAnnotation(annotation) {
   return request({
-    url: '/api/annotation/delete',
+    url: '/annotation/delete',
     method: 'post',
     data: {
       annotation
@@ -38,21 +38,21 @@ export function deleteAnnotation(annotation) {
 
 export function getAnnotationIdList() {
   return request({
-    url: '/api/annotation/getAnnotationIdList',
+    url: '/annotation/getAnnotationIdList',
     method: 'get'
   })
 }
 
 export function getAnnotation(id) {
   return request({
-    url: '/api/annotation/get/' + id,
+    url: '/annotation/get/' + id,
     method: 'get'
   })
 }
 
 export function initMongo() {
   return request({
-    url: '/api/mongo/init',
+    url: '/mongo/init',
     method: 'get'
   })
 }

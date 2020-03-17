@@ -56,7 +56,7 @@ class AnnotationServerApplicationTests {
         News news = mongoTemplate.findOne(query, News.class);
         int userCount = 3;
         for (Field field : news.getClass().getDeclaredFields()) {
-            if(field.getName().equals("users")){
+            if (field.getName().equals("users")) {
                 continue;
             }
             Type type = field.getType();
@@ -76,19 +76,19 @@ class AnnotationServerApplicationTests {
                         }
                         field.set(news, list);
                     } else if (typeName.equals(Boolean.class.getName())) {
-                        LinkedList<Boolean> list=new LinkedList<>();
+                        LinkedList<Boolean> list = new LinkedList<>();
                         for (int i = 0; i < userCount; i++) {
                             list.add(null);
                         }
                         field.set(news, list);
                     } else if (typeName.equals(Date.class.getName())) {
-                        LinkedList<Date> list=new LinkedList<>();
+                        LinkedList<Date> list = new LinkedList<>();
                         for (int i = 0; i < userCount; i++) {
                             list.add(null);
                         }
                         field.set(news, list);
                     } else if (typeName.equals(String.class.getName())) {
-                        LinkedList<String> list=new LinkedList<>();
+                        LinkedList<String> list = new LinkedList<>();
                         for (int i = 0; i < userCount; i++) {
                             list.add(null);
                         }
@@ -96,6 +96,15 @@ class AnnotationServerApplicationTests {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    public void ifTest() {
+        List<Boolean> list = new LinkedList<>();
+        list.add(null);
+        if (list.get(0)!=null) {
+            System.out.println();
         }
     }
 

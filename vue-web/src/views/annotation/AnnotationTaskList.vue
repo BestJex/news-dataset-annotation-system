@@ -9,9 +9,9 @@
         />
       </el-col>
       <el-col :span="7">
-        <el-button size="medium" plain>朴素按钮</el-button>
-        <el-button size="medium" plain>朴素按钮</el-button>
-        <el-button size="medium" plain>朴素按钮</el-button>
+        <el-button size="medium" plain>搜索</el-button>
+        <el-button size="medium" type="primary">一键校验</el-button>
+<!--        <el-button size="medium" plain>朴素按钮</el-button>-->
       </el-col>
       <el-col :span="12" style="margin: 5px auto;vertical-align: middle;text-align: right;display:table-cell">
         <div style="height: 100%">
@@ -37,6 +37,7 @@
             || data.news_content_translate_cn.toString().toLowerCase().includes(search.toLowerCase()))"
           height="550"
           border
+          v-loading="loading"
           style="width: 100%"
         >
           <el-table-column
@@ -79,14 +80,15 @@
           <el-table-column
             prop="users"
             label="标注人"
-            width="170"
+            width="130"
           >
             <template slot-scope="scope">
               <div class="tag-list">
                 <el-tag
                   v-for="(item,index) in scope.row.users"
                   :key="index"
-                  :type="scope.row.news_position[index]===null?'warning':'primary'"
+                  size="small"
+                  :type="scope.row.news_position[index]===null?'info':'success'"
                   disable-transitions
                 >{{ item }}
                 </el-tag>
@@ -105,19 +107,19 @@
           </el-table-column>
 
           <el-table-column
-            prop="state"
+            prop="news_state"
             label="状态"
             width="120"
             sortable
-            :filters="[{ text: '待标注', value: 0 }, { text: '待校对', value: 1 },{ text: '已完成', value: 2 }]"
+            :filters="[{ text: '待标注', value: 0 }, { text: '标注中', value: 1 },{ text: '待校对', value: 2 },{ text: '已完成', value: 3 }]"
             :filter-method="filterState"
             filter-placement="bottom-end"
           >
             <template slot-scope="scope">
               <el-tag
-                :type="scope.row.state === 0 ? 'primary' : scope.row.state === 1 ? 'success' : 'danger'"
+                :type="scope.row.news_state === 0 ? 'primary' : scope.row.news_state === 1 ? 'success' : 'danger'"
                 disable-transitions
-              >{{ scope.row.state === 0 ? '待标注' : scope.row.state === 1 ? '待校对' : '已完成' }}
+              >{{ scope.row.news_state === 0 ? '待标注' : scope.row.news_state === 1 ? '待校对' : '已完成' }}
               </el-tag>
             </template>
           </el-table-column>
@@ -233,7 +235,8 @@ export default {
       tableData: [],
       search: '',
       username: '',
-      annotationTable: []
+      annotationTable: [],
+      loading: true
     }
   },
 
@@ -242,6 +245,7 @@ export default {
     getAnnotationListByUsername(this.username).then(response => {
       const data = response.data
       this.tableData = data
+      this.loading = false
     })
   },
 
@@ -320,7 +324,7 @@ export default {
 
 <style scoped>
 .tag-list > span {
-  margin-left: 10px;
+  margin-right: 10px;
   margin-top: 5px;
 }
 

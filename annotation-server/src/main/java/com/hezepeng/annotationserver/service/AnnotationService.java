@@ -3,6 +3,7 @@ package com.hezepeng.annotationserver.service;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
+import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,4 +27,6 @@ public interface AnnotationService {
     ServerResponse<List<NewsBo>> getAnnotationIdList();
 
     ServerResponse addNewsAnnotation(HttpServletRequest request, NewsAnnotation annotation);
+
+    ServerResponse createTask(AnnotationTask userTaskList);
 }

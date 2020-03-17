@@ -55,104 +55,113 @@ public class AnnotationRepository {
 
     public List<News> findAllAnnotationId() {
         Query query = new Query();
-        query.fields().include("_id").include("news_state");
-        query.with(Sort.by(Sort.Order.desc("news_state")).and(Sort.by(Sort.Order.asc("_id"))));
+        query.fields().include("_id").include("news_state").include("news_annotation_done");
+        query.with(Sort.by(Sort.Order.desc("news_annotation_done")).and(Sort.by(Sort.Order.asc("_id"))));
         return mongoTemplate.find(query, News.class);
     }
 
-    public Integer initField(){
+    public Integer initField() {
         try {
             Query query = new Query();
+            query.addCriteria(Criteria.where("news_state").is(null));
             List<News> newsList = mongoTemplate.findAll(News.class);
             AtomicInteger updateCount = new AtomicInteger();
             newsList.forEach(news -> {
-                if(news.getInit()){
-                    return;
-                }
-                boolean needUpdate = false;
-                int userCount = news.getUsers().size();
-                System.out.println(userCount);
-                for (Field field : news.getClass().getDeclaredFields()) {
-                    if(field.getName().equals("users")){
-                        System.out.println("users");
-                        continue;
-                    }
-                    Type type = field.getType();
-                    field.setAccessible(true);
-                    if (type == LinkedList.class) {
-                        Type genericType = field.getGenericType();
-                        // 如果是泛型参数的类型
-                        if (genericType instanceof ParameterizedType) {
-                            // 获得泛型参数的类型
-                            ParameterizedType pt = (ParameterizedType) genericType;
-                            //得到泛型里子类型
-                            String typeName = pt.getActualTypeArguments()[0].getTypeName();
-                            if (typeName.contains(LinkedList.class.getName())) {
-                                LinkedList<LinkedList<String>> list = new LinkedList<>();
-                                for (int i = 0; i < userCount; i++) {
-                                    list.add(null);
-                                }
-                                try {
-                                    field.set(news, list);
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            } else if (typeName.equals(Boolean.class.getName())) {
-                                LinkedList<Boolean> list=new LinkedList<>();
-                                for (int i = 0; i < userCount; i++) {
-                                    list.add(null);
-                                }
-                                try {
-                                    field.set(news, list);
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            } else if (typeName.equals(Date.class.getName())) {
-                                LinkedList<Date> list=new LinkedList<>();
-                                for (int i = 0; i < userCount; i++) {
-                                    list.add(null);
-                                }
-                                try {
-                                    field.set(news, list);
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            } else if (typeName.equals(String.class.getName())) {
-                                LinkedList<String> list=new LinkedList<>();
-                                for (int i = 0; i < userCount; i++) {
-                                    list.add(null);
-                                }
-                                try {
-                                    field.set(news, list);
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
-                    // 初始化标注状态
-                    if (type == Integer.class) {
-                        try {
-                            Object value = field.get(news);
-                            if (value == null) {
-                                needUpdate = true;
-                                field.set(news, 0);
-                            }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                boolean needUpdate = initField(news);
                 if (needUpdate) {
                     updateCount.getAndIncrement();
-                    mongoTemplate.save(news);
                 }
+
             });
             return updateCount.get();
         } catch (Exception ex) {
             ex.printStackTrace();
             return -1;
         }
+    }
+
+    public boolean initField(News news) {
+        if (news.getInit()) {
+            return false;
+        }
+        boolean needUpdate = false;
+        // 给校对留一个存储位置
+        int userCount = news.getUsers().size();
+        for (Field field : news.getClass().getDeclaredFields()) {
+            if (field.getName().equals("users")) {
+                continue;
+            }
+            Type type = field.getType();
+            field.setAccessible(true);
+            if (type == LinkedList.class) {
+                Type genericType = field.getGenericType();
+                // 如果是泛型参数的类型
+                if (genericType instanceof ParameterizedType) {
+                    // 获得泛型参数的类型
+                    ParameterizedType pt = (ParameterizedType) genericType;
+                    //得到泛型里子类型
+                    String typeName = pt.getActualTypeArguments()[0].getTypeName();
+                    if (typeName.contains(LinkedList.class.getName())) {
+                        LinkedList<LinkedList<String>> list = new LinkedList<>();
+                        for (int i = 0; i < userCount; i++) {
+                            list.add(null);
+                        }
+                        try {
+                            field.set(news, list);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (typeName.equals(Boolean.class.getName())) {
+                        LinkedList<Boolean> list = new LinkedList<>();
+                        for (int i = 0; i < userCount; i++) {
+                            list.add(null);
+                        }
+                        try {
+                            field.set(news, list);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (typeName.equals(Date.class.getName())) {
+                        LinkedList<Date> list = new LinkedList<>();
+                        for (int i = 0; i < userCount; i++) {
+                            list.add(null);
+                        }
+                        try {
+                            field.set(news, list);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (typeName.equals(String.class.getName())) {
+                        LinkedList<String> list = new LinkedList<>();
+                        for (int i = 0; i < userCount; i++) {
+                            list.add(null);
+                        }
+                        try {
+                            field.set(news, list);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            // 初始化标注状态
+            if (type == Integer.class) {
+                try {
+                    Object value = field.get(news);
+                    if (value == null && field.getName().equals("news_state")) {
+                        needUpdate = true;
+                        // 设置news_state
+                        field.set(news, 0);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (needUpdate) {
+            mongoTemplate.save(news);
+        }
+        return needUpdate;
 
     }
 }

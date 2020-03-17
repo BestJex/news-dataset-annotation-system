@@ -76,44 +76,6 @@ export const constantRouterMap = [
 // 异步挂载的路由
 // 动态需要根据权限加载的路由表
 export const asyncRouterMap = [
-  {
-    path: '/permission',
-    component: Layout,
-    name: 'Permission',
-    redirect: '/permission/admin',
-    alwaysShow: true,
-    meta: {
-      title: '权限测试页面',
-      icon: 'nested',
-      role: ['admin']
-    },
-    children: [
-      {
-        path: 'admin',
-        component: () => import('@/views/permission/RootPermission'),
-        name: 'AdminPage',
-        meta: {
-          role: ['admin', 'super_editor'],
-          title: '权限测试',
-          icon: 'checklist',
-          noCache: true
-          // 页面需要的权限
-        }
-      },
-      {
-        path: 'child',
-        component: () => import('@/views/permission/AdminPage'),
-        name: 'AdminPage',
-        meta: {
-          role: ['admin', 'super_editor'],
-          title: '子权限测试页',
-          icon: 'addteam',
-          noCache: true
-        } // 页面需要的权限
-      }
-    ]
-  },
-
   // 文章模块
   {
     path: '/annotation',
@@ -124,7 +86,7 @@ export const asyncRouterMap = [
     meta: {
       title: '标注管理',
       icon: 'nested',
-      role: ['admin']
+      role: ['admin','editor']
     },
     children: [
       {
@@ -132,7 +94,7 @@ export const asyncRouterMap = [
         component: () => import('@/views/annotation/NewAnnotation'),
         name: 'NewAnnotation',
         meta: {
-          role: ['admin'],
+          role: ['admin','editor'],
           title: '开始标注',
           icon: 'form',
           noCache: true
@@ -144,9 +106,77 @@ export const asyncRouterMap = [
         component: () => import('@/views/annotation/AnnotationTaskList'),
         name: 'AnnotationTaskList',
         meta: {
-          role: ['admin'],
+          role: ['admin','editor'],
           title: '标注列表',
           icon: 'table',
+          noCache: true
+          // 页面需要的权限
+        }
+      }
+    ]
+  },
+
+  // 用户模块
+  {
+    path: '/user',
+    component: Layout,
+    name: 'User',
+    redirect: '/user/list',
+    alwaysShow: true,
+    meta: {
+      title: '用户管理',
+      icon: 'nested',
+      role: ['admin']
+    },
+    children: [
+      {
+        path: 'new',
+        component: () => import('@/views/user/AddUser'),
+        name: 'NewUser',
+        meta: {
+          role: ['admin'],
+          title: '新建用户',
+          icon: 'form',
+          noCache: true
+          // 页面需要的权限
+        }
+      },
+      {
+        path: 'list',
+        component: () => import('@/views/user/UserList'),
+        name: 'UserList',
+        meta: {
+          role: ['admin'],
+          title: '用户列表',
+          icon: 'table',
+          noCache: true
+          // 页面需要的权限
+        }
+      }
+    ]
+  },
+
+  // 用户模块
+  {
+    path: '/task',
+    component: Layout,
+    name: 'Task',
+    redirect: '/task/new',
+    alwaysShow: true,
+    meta: {
+      title: '任务管理',
+      icon: 'nested',
+      role: ['admin']
+    },
+    children: [
+      {
+        path: 'new',
+        component: () => import('@/views/task/NewTask'),
+        name: 'NewTask',
+        meta: {
+          role: ['admin'],
+          title: '新建分配',
+          icon: 'tree',
           noCache: true
           // 页面需要的权限
         }
