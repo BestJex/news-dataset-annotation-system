@@ -20,13 +20,33 @@ public interface AnnotationService {
 
     ServerResponse<List<News>> getNewsAnnotationList(HttpServletRequest request);
 
-    ServerResponse<List<News>> getAnnotationListByUsername(HttpServletRequest request);
+    /***
+     * 获取指定用户的标注任务列表、如果是管理员身份就返回所有用户的标注任务列表
+     */
+    ServerResponse<List<News>> getTaskListByUsername(HttpServletRequest request);
 
+    /***
+     * 获取指定Id的新闻
+     */
     ServerResponse<News> getOneNewsAnnotationById(String id);
 
-    ServerResponse<List<NewsBo>> getAnnotationIdList();
+    /***
+     * 获取指定用户的标注任务的id列表
+     */
+    ServerResponse<List<NewsBo>> getAnnotationIdList(HttpServletRequest request);
 
+    /***
+     * 添加一个新闻标注
+     */
     ServerResponse addNewsAnnotation(HttpServletRequest request, NewsAnnotation annotation);
 
+    /***
+     * 新建任务分配
+     */
     ServerResponse createTask(AnnotationTask userTaskList);
+
+    /**
+     * 一键校验
+     */
+    ServerResponse checkAnnotation();
 }

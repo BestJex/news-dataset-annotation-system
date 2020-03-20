@@ -278,13 +278,12 @@ export default {
 
   mounted: function() {
     this.username = getUsername()
-    initMongo()
     getAnnotationIdList().then(response => {
       this.ids = response.data
       this.totalNo = response.data.length
       console.log(this.ids)
       for (let i = 0; i < this.ids.length; i++) {
-        if (this.ids[i].state === 0) {
+        if (this.ids[i]['state'] === 0) {
           this.currentNo = i
           this.doneNo = i - 1
           break
@@ -387,6 +386,9 @@ export default {
         news_about_china: this.form.news_about_china[0],
         news_type: this.form.news_type[0],
         news_emotion_basis: this.form.news_emotion_basis
+      }
+      if (annotation['news_emotion'].length === 1) {
+        annotation['news_emotion'].push('none')
       }
       saveAnnotation(annotation).then(response => {
         this.$message({

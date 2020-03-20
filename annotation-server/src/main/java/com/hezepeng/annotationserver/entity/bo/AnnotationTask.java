@@ -1,5 +1,6 @@
 package com.hezepeng.annotationserver.entity.bo;
 
+import com.hezepeng.annotationserver.entity.UserTask;
 import lombok.Data;
 import sun.print.PSPrinterJob;
 
@@ -18,9 +19,9 @@ public class AnnotationTask {
     private int ratio;
     private List<UserTask> userTaskList;
 
-    @Data
-    public class UserTask {
-        private int taskCount;
-        private String username;
+    public AnnotationTask(int newsCount, int ratio, List<UserTask> userTaskList) {
+        this.newsCount = newsCount;
+        this.ratio = ratio;
+        this.userTaskList = userTaskList;
     }
 }

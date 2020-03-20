@@ -9,9 +9,8 @@
         />
       </el-col>
       <el-col :span="7">
-        <el-button size="medium" plain>搜索</el-button>
-        <el-button size="medium" type="primary">一键校验</el-button>
-<!--        <el-button size="medium" plain>朴素按钮</el-button>-->
+        <el-button size="medium" type="primary" @click="checkAnnotation">一键校验</el-button>
+        <el-button size="medium" type="primary" icon="el-icon-refresh" @click="initTable"></el-button>
       </el-col>
       <el-col :span="12" style="margin: 5px auto;vertical-align: middle;text-align: right;display:table-cell">
         <div style="height: 100%">
@@ -19,7 +18,7 @@
             style="display: inline-block"
             background
             layout="total, prev, pager, next"
-            :total="2567"
+            :total="tableData.length"
           />
         </div>
 
@@ -29,16 +28,12 @@
     <el-row>
       <el-col :span="24">
         <el-table
-          :data="tableData.filter(data => !search
-            || data.id.toString().toLowerCase().includes(search.toLowerCase())
-            || data.news_title_translate_cn.toString().toLowerCase().includes(search.toLowerCase())
-            || data.news_country.toString().toLowerCase().includes(search.toLowerCase())
-            || data.news_publish_timestamp.toString().toLowerCase().includes(search.toLowerCase())
-            || data.news_content_translate_cn.toString().toLowerCase().includes(search.toLowerCase()))"
+          v-loading="loading"
+          :data="tableData"
           height="550"
           border
-          v-loading="loading"
           style="width: 100%"
+          :loading="loading"
         >
           <el-table-column
             label="No."
@@ -85,7 +80,7 @@
             <template slot-scope="scope">
               <div class="tag-list">
                 <el-tag
-                  v-for="(item,index) in scope.row.users"
+                  v-for="(item,index) in scope.row.users.filter(user=>{return user!=='FinalCheck'})"
                   :key="index"
                   size="small"
                   :type="scope.row.news_position[index]===null?'info':'success'"
@@ -101,8 +96,8 @@
             width="80"
           >
             <template slot-scope="scope">
-              {{ scope.row.news_position.filter(data=>{return data!==null}).length }} /
-              {{ scope.row.news_position.length }}
+              {{ scope.row.news_annotation_done.filter(data=>{return data!=null}).length }} /
+              {{ scope.row.news_annotation_done.length - 1 }}
             </template>
           </el-table-column>
 
@@ -117,9 +112,9 @@
           >
             <template slot-scope="scope">
               <el-tag
-                :type="scope.row.news_state === 0 ? 'primary' : scope.row.news_state === 1 ? 'success' : 'danger'"
+                :type="news_state_tag[scope.row.news_state]"
                 disable-transitions
-              >{{ scope.row.news_state === 0 ? '待标注' : scope.row.news_state === 1 ? '待校对' : '已完成' }}
+              >{{ news_state[scope.row.news_state.toString()] }}
               </el-tag>
             </template>
           </el-table-column>
@@ -145,7 +140,9 @@
                   </tr>
                   <tr v-for="(item,index) in scope.row.users" :key="index">
                     <td class="column">{{ item }}</td>
-                    <td>{{ scope.row.news_emotion[index]==null?'待标注':scope.row.news_emotion[index] }}</td>
+                    <td style="width: 300px">{{ scope.row.news_emotion[index]==null?'待标注':scope.row.news_emotion[index]
+                      }}
+                    </td>
                     <td>{{ scope.row.news_position[index]==null?'待标注':scope.row.news_position[index] }}</td>
                     <td>{{ scope.row.news_subject[index]==null?'待标注':scope.row.news_subject[index] }}</td>
                     <td>{{ scope.row.news_type[index]==null?'待标注':scope.row.news_type[index] }}</td>
@@ -225,33 +222,71 @@
 
 <script>
 import { getUsername } from '@/utils/authorize'
-import { getAnnotationListByUsername } from '@/api/annotation'
+import { checkAnnotation, getAnnotationListByUsername } from '@/api/annotation'
 
 export default {
   name: 'AnnotationTaskList',
 
   data() {
     return {
-      tableData: [],
+      taskList: [],
       search: '',
       username: '',
       annotationTable: [],
-      loading: true
+      loading: true,
+      news_state: {
+        '0': '待标注',
+        '1': '标注中',
+        '2': '待校验',
+        '4': '待仲裁',
+        '10': '已完成'
+      },
+      news_state_tag: {
+        '0': 'info',
+        '1': 'primary',
+        '2': 'warning',
+        '4': 'danger',
+        '10': 'success'
+      }
+    }
+  },
+
+  computed: {
+    tableData: function() {
+      return this.taskList.filter(data => !this.search ||
+        data.id.toString().toLowerCase().includes(this.search.toLowerCase()) ||
+        data.news_title_translate_cn.toString().toLowerCase().includes(this.search.toLowerCase()) ||
+        data.news_country.toString().toLowerCase().includes(this.search.toLowerCase()) ||
+        data.news_publish_timestamp.toString().toLowerCase().includes(this.search.toLowerCase()) ||
+        data.news_content_translate_cn.toString().toLowerCase().includes(this.search.toLowerCase()))
     }
   },
 
   mounted: function() {
     this.username = getUsername()
-    getAnnotationListByUsername(this.username).then(response => {
-      const data = response.data
-      this.tableData = data
-      this.loading = false
-    })
+    this.initTable()
   },
 
   methods: {
+    initTable() {
+      this.loading = true
+      getAnnotationListByUsername().then(response => {
+        const data = response.data
+        this.taskList = data
+        this.loading = false
+      })
+      this.$nextTick(() => {
+        this.$message.info('已更新最新数据')
+        this.loading = false
+      })
+    },
+    checkAnnotation() {
+      checkAnnotation().then(response => {
+        this.$message.success('成功校验 ' + response.data.complete + ' 条数据')
+      })
+    },
     filterState(value, row) {
-      return row.state === value
+      return row.news_state === value
     },
     onDeleteRow(index, row) {
       const articleInfo = []

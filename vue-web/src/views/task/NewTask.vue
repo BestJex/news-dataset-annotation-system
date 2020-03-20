@@ -26,8 +26,8 @@
             </el-col>
           </el-form-item>
           <el-form-item label="选择标注用户">
-            <el-checkbox-group v-model="form.userTask">
-              <div v-for="(item,index) in userTask" :key="index">
+            <el-checkbox-group v-model="form.userTaskList">
+              <div v-for="(item,index) in userTaskList" :key="index">
                 <el-checkbox :label="item">
                   {{ item.username }} - {{ item.name }}
                 </el-checkbox>
@@ -35,7 +35,7 @@
                   <el-input-number
                     v-model="item.taskCount"
                     size="small"
-                    :disabled="!form.userTask.includes(item)"
+                    :disabled="!form.userTaskList.includes(item)"
                     placeholder="请输入任务数"
                   />
                 </el-form-item>
@@ -82,6 +82,7 @@
 <script>
 
 import { getUserList } from '@/api/user'
+import { createTask } from '@/api/annotation'
 
 export default {
   name: 'NewTask',
@@ -98,17 +99,17 @@ export default {
     }
     return {
       message: '',
-      userTask: [],
+      userTaskList: [],
       totalNewsCount: 1000,
       form: {
         newsCount: 0,
         ratio: 3,
-        userTask: []
+        userTaskList: []
       },
       formRules: {
         newsCount: [{ required: true, trigger: 'blur', validator: validNewsCount }],
         ratio: [{ required: true, trigger: 'blur', message: '请选择每篇新闻需要几人标注' }],
-        userTask: [{ required: true, trigger: 'blur', message: '请选择标注人' }]
+        userTaskList: [{ required: true, trigger: 'blur', message: '请选择标注人' }]
       },
       showDialog: false,
       formChanged: false
@@ -121,7 +122,7 @@ export default {
     },
     totalUserTaskCount: function() {
       let total = 0
-      for (const user of this.form.userTask) {
+      for (const user of this.form.userTaskList) {
         total += user.taskCount
       }
       return total
@@ -140,15 +141,15 @@ export default {
   mounted: function() {
     getUserList().then(response => {
       const data = response.data
-      const userTask = []
+      const userTaskList = []
       for (const userVo of data) {
-        userTask.push({
+        userTaskList.push({
           username: userVo.user.username,
           name: userVo.user.name,
           taskCount: 0
         })
       }
-      this.userTask = userTask
+      this.userTaskList = userTaskList
     })
   },
 
@@ -156,9 +157,10 @@ export default {
     onReset() {
       this.form = {
         newsCount: 0,
-        userTask: []
+        ratio: 0,
+        userTaskList: []
       }
-      for (const user of this.userTask) {
+      for (const user of this.userTaskList) {
         user.taskCount = 0
       }
       this.formChanged = false
@@ -173,14 +175,16 @@ export default {
             this.$message.error('发布任务量之和不能大于未标注新闻总数')
             return false
           }
-          for (const user of this.form.userTask) {
+          for (const user of this.form.userTaskList) {
             total += user.taskCount
           }
-          if (total !== this.form.newsCount) {
+          if (total !== this.form.newsCount * this.form.ratio) {
             this.$message.error('所有标注者任务量之和不等于发布任务总数')
             return false
           } else {
-
+            createTask(this.form).then(response => {
+              this.$message.success(response.msg)
+            })
           }
         } else {
           this.$message.error('输入的信息有误，请检查后提交')

@@ -8,15 +8,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -31,11 +29,61 @@ public class AnnotationRepository {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    public void updateNews(News news) {
+        mongoTemplate.save(news);
+    }
+
+    public void updateNewsStateById(ObjectId id, Integer state) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+        Update update = new Update();
+        update.set("news_state", state);
+        mongoTemplate.updateFirst(query, update, News.class);
+    }
+
     public List<News> findAllAnnotationNewsList() {
         Query query = new Query();
         query.fields().exclude("news_html_content")
                 .exclude("news_content")
                 .exclude("news_content_translate_en");
+        return mongoTemplate.find(query, News.class);
+    }
+
+    public List<News> findAllTaskList() {
+        Query query = new Query();
+        query.fields().exclude("news_html_content")
+                .exclude("news_content")
+                .exclude("news_content_translate_en");
+        query.addCriteria(Criteria.where("init").is(true));
+        query.with((Sort.by(Sort.Order.asc("_id"))));
+        return mongoTemplate.find(query, News.class);
+    }
+
+    public List<News> findTaskListByUsername(String username) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("users").all(username));
+        query.with((Sort.by(Sort.Order.asc("_id"))));
+        return mongoTemplate.find(query, News.class);
+    }
+
+    public List<News> findAllAnnotationNewsListBySkipLimit(int skip, int limit) {
+        Query query = new Query();
+        query.fields().exclude("news_html_content")
+                .exclude("news_content")
+                .exclude("news_content_translate_en");
+        query.skip(skip).limit(limit);
+        return mongoTemplate.find(query, News.class);
+    }
+
+    public List<News> findNewsListByState(Integer state, Integer skip, Integer limit) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(state));
+        if (skip != null) {
+            query.skip(skip);
+        }
+        if (limit != null) {
+            query.limit(limit);
+        }
         return mongoTemplate.find(query, News.class);
     }
 
@@ -53,10 +101,11 @@ public class AnnotationRepository {
         return mongoTemplate.findOne(query, News.class);
     }
 
-    public List<News> findAllAnnotationId() {
+    public List<News> findAllAnnotationIdByUsername(String username) {
         Query query = new Query();
-        query.fields().include("_id").include("news_state").include("news_annotation_done");
-        query.with(Sort.by(Sort.Order.desc("news_annotation_done")).and(Sort.by(Sort.Order.asc("_id"))));
+        query.fields().include("_id").include("users").include("news_state").include("news_annotation_done");
+        query.addCriteria(Criteria.where("users").all(username).and("news_state").lt(3));
+        query.with(Sort.by(Sort.Order.desc("news_state")).and(Sort.by(Sort.Order.asc("_id"))));
         return mongoTemplate.find(query, News.class);
     }
 
@@ -159,6 +208,8 @@ public class AnnotationRepository {
             }
         }
         if (needUpdate) {
+            news.setInit(true);
+//            news.setNews_state(0);
             mongoTemplate.save(news);
         }
         return needUpdate;

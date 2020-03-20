@@ -8,11 +8,10 @@ export function saveAnnotation(annotation) {
   })
 }
 
-export function getAnnotationListByUsername(username) {
+export function getAnnotationListByUsername() {
   return request({
-    url: '/annotation/list',
+    url: '/annotation/task/list',
     method: 'get',
-    params: { username }
   })
 }
 
@@ -38,7 +37,7 @@ export function deleteAnnotation(annotation) {
 
 export function getAnnotationIdList() {
   return request({
-    url: '/annotation/getAnnotationIdList',
+    url: '/annotation/id/list',
     method: 'get'
   })
 }
@@ -54,5 +53,20 @@ export function initMongo() {
   return request({
     url: '/mongo/init',
     method: 'get'
+  })
+}
+
+export function createTask(task) {
+  return request({
+    url: '/annotation/task/create',
+    method: 'post',
+    data: task
+  })
+}
+
+export function checkAnnotation() {
+  return request({
+    url: '/annotation/check',
+    method: 'post'
   })
 }

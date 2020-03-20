@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.ServerSocket;
 
 /**
  * @author: Hezepeng
@@ -21,11 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 public class AnnotationController {
     @Autowired
     private AnnotationService annotationService;
-
-    @GetMapping("/getNewsAnnotationList")
-    public ServerResponse getNewsAnnotationList(HttpServletRequest request) {
-        return annotationService.getNewsAnnotationList(request);
-    }
 
     @GetMapping("/list")
     public ServerResponse GetAnnotationList(HttpServletRequest request) {
@@ -43,14 +39,25 @@ public class AnnotationController {
         return annotationService.getOneNewsAnnotationById(id);
     }
 
-    @GetMapping("/getAnnotationIdList")
-    public ServerResponse getAnnotationIdList() {
-        return annotationService.getAnnotationIdList();
+    @GetMapping("/task/list")
+    public ServerResponse getTaskList(HttpServletRequest request) {
+        return annotationService.getTaskListByUsername(request);
     }
 
-    @PostMapping("/createTask")
+    @GetMapping("/id/list")
+    public ServerResponse getAnnotationIdList(HttpServletRequest request) {
+        return annotationService.getAnnotationIdList(request);
+    }
+
+    @PostMapping("/task/create")
     @NeedAdminAuthorize
-    public ServerResponse createTask(@RequestBody AnnotationTask task){
+    public ServerResponse createTask(@RequestBody AnnotationTask task) {
         return annotationService.createTask(task);
+    }
+
+    @PostMapping("/check")
+    @NeedAdminAuthorize
+    public ServerResponse checkAnnotation() {
+        return annotationService.checkAnnotation();
     }
 }

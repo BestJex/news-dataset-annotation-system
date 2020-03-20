@@ -101,11 +101,17 @@ class AnnotationServerApplicationTests {
 
     @Test
     public void ifTest() {
-        List<Boolean> list = new LinkedList<>();
-        list.add(null);
-        if (list.get(0)!=null) {
-            System.out.println();
-        }
+        List<News> list = new LinkedList<>();
+        list.add(new News());
+        list.add(new News());
+        News news = list.get(1);
+        news.setNews_about_china(new LinkedList<>());
+        System.out.println(list);
+
+        LinkedList<Boolean> aboutChina = news.getNews_about_china();
+        aboutChina.add(0, false);
+//            news.setNews_about_china(aboutChina);
+        System.out.println(list);
     }
 
 }
