@@ -86,7 +86,7 @@ export const asyncRouterMap = [
     meta: {
       title: '标注管理',
       icon: 'nested',
-      role: ['admin','editor']
+      role: ['admin', 'editor']
     },
     children: [
       {
@@ -94,7 +94,7 @@ export const asyncRouterMap = [
         component: () => import('@/views/annotation/NewAnnotation'),
         name: 'NewAnnotation',
         meta: {
-          role: ['admin','editor'],
+          role: ['admin', 'editor'],
           title: '开始标注',
           icon: 'form',
           noCache: true
@@ -106,7 +106,7 @@ export const asyncRouterMap = [
         component: () => import('@/views/annotation/AnnotationTaskList'),
         name: 'AnnotationTaskList',
         meta: {
-          role: ['admin','editor'],
+          role: ['admin', 'editor'],
           title: '标注列表',
           icon: 'table',
           noCache: true
@@ -166,7 +166,7 @@ export const asyncRouterMap = [
     meta: {
       title: '任务管理',
       icon: 'nested',
-      role: ['admin']
+      role: ['admin','editor']
     },
     children: [
       {
@@ -176,6 +176,18 @@ export const asyncRouterMap = [
         meta: {
           role: ['admin'],
           title: '新建分配',
+          icon: 'tree',
+          noCache: true
+          // 页面需要的权限
+        }
+      },
+      {
+        path: '/machine-learning/new',
+        component: () => import('@/views/task/NewMachineLearningTask'),
+        name: 'NewMachineLearningTask',
+        meta: {
+          role: ['admin', 'editor'],
+          title: '机器学习任务',
           icon: 'tree',
           noCache: true
           // 页面需要的权限

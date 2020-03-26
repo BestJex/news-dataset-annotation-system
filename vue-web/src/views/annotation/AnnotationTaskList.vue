@@ -21,7 +21,6 @@
             :total="tableData.length"
           />
         </div>
-
       </el-col>
 
     </el-row>

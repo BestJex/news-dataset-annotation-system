@@ -7,15 +7,16 @@
       </el-col>
       <el-col :span="12">
         <el-button-group style="float:right;">
-          <el-button type="primary" icon="el-icon-arrow-left" @click="onPreNews">上一篇</el-button>
-          <el-button type="primary" @click="onNextNews" :disabled="nextNewsDisabled">下一篇<i
+          <el-button type="primary" icon="el-icon-arrow-left" :disabled="preNewsDisabled" @click="onPreNews">上一篇
+          </el-button>
+          <el-button type="primary" :disabled="nextNewsDisabled" @click="onNextNews">下一篇<i
             class="el-icon-arrow-right el-icon--right" /></el-button>
         </el-button-group>
       </el-col>
     </el-row>
     <el-row style="padding: 20px" :gutter="20">
       <el-col :span="12">
-        <el-tabs type="border-card" v-loading="loading">
+        <el-tabs v-loading="loading" type="border-card">
           <el-tab-pane label="翻译">
             <div style="margin-bottom: 10px">
               <span style="color: dodgerblue;font-size: 14px;">
@@ -29,7 +30,7 @@
                   >{{ news['id'] }}</a>
                 </el-tooltip>
                 时间:
-                {{new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
+                {{ new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
                 国家:
                 {{ news['news_country'] }}
               </span>
@@ -54,7 +55,7 @@
                   >{{ news['id'] }}</a>
                 </el-tooltip>
                 时间:
-                {{new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
+                {{ new Date(news['news_publish_timestamp']*1000).Format('yy-MM-dd hh:mm:ss') }}
                 国家:
                 {{ news['news_country'] }}
               </span>
@@ -229,7 +230,7 @@
 
 <script>
 
-import { getAnnotation, getAnnotationIdList, initMongo, saveAnnotation } from '@/api/annotation'
+import { getAnnotation, getAnnotationIdList, saveAnnotation } from '@/api/annotation'
 import { getUsername } from '@/utils/authorize'
 
 export default {
@@ -260,7 +261,7 @@ export default {
       showEmotionBadge: false,
       ids: [],
       currentNo: -1,
-      doneNo: 0,
+      doneNo: -1,
       totalNo: 1,
       compareDialogVisible: false,
       formLabelWidth: '120px',
@@ -276,33 +277,30 @@ export default {
     }
   },
 
-  mounted: function() {
-    this.username = getUsername()
-    getAnnotationIdList().then(response => {
-      this.ids = response.data
-      this.totalNo = response.data.length
-      console.log(this.ids)
-      for (let i = 0; i < this.ids.length; i++) {
-        if (this.ids[i]['state'] === 0) {
-          this.currentNo = i
-          this.doneNo = i - 1
-          break
-        }
+  computed: {
+    percentage: function() {
+      if (this.currentNo < 0) {
+        return 0
       }
-    })
+      return this.currentNo / this.totalNo * 100
+    },
+    nextNewsDisabled: function() {
+      return this.currentNo > this.doneNo
+    },
+    preNewsDisabled: function() {
+      return this.currentNo <= 0
+    }
   },
 
   watch: {
     currentNo: {
       handler(newVal, oldVal) {
-        if (this.ids.length === 0) {
+        if (newVal < 0) {
           return
         }
         const username = this.username
         this.resetForm()
-        this.$nextTick(() => {
-          this.loading = false
-        })
+        this.loading = true
         getAnnotation(this.ids[newVal]['id']).then(response => {
           this.$nextTick(() => { // 以服务的方式调用的 Loading 需要异步关闭
             this.loading = false
@@ -339,19 +337,39 @@ export default {
     }
   },
 
-  computed: {
-    percentage: function() {
-      if (this.currentNo < 0) {
-        return 0
+  mounted: function() {
+    this.username = getUsername()
+    getAnnotationIdList().then(response => {
+      this.ids = response.data
+      this.totalNo = response.data.length
+      console.log(this.ids)
+      if (this.ids.length === 0) {
+        this.showNoDataMessage()
+        return
       }
-      return this.currentNo / this.totalNo * 100
-    },
-    nextNewsDisabled: function() {
-      return this.currentNo > this.doneNo
-    }
+      for (let i = 0; i < this.ids.length; i++) {
+        if (this.ids[i]['state'] === 0) {
+          this.currentNo = i
+          this.doneNo = i - 1
+          break
+        }
+      }
+    })
   },
 
   methods: {
+    showNoDataMessage() {
+      this.$alert('当前没有标注任务，请先联系管理员进行分配。', '提示', {
+        confirmButtonText: '确定',
+        callback: action => {
+          this.$message({
+            type: 'info',
+            message: '该账号暂无标注任务'
+          })
+        }
+      })
+    },
+
     onSubmit() {
       // this.$refs.form.validate(valid => {
       //   if (valid) {
