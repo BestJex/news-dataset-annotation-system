@@ -31,16 +31,16 @@ class AnnotationServerApplicationTests {
     @Test
     void addUser() {
         User user = new User();
-        user.setUsername("hezepeng");
-        user.setPassword(MD5Util.getMD5Upper("hezepeng"));
-        user.setName("何泽鹏");
+        user.setUsername("caohaoshuang");
+        user.setPassword(MD5Util.getMD5Upper("caohaoshuang"));
+        user.setName("曹皓爽");
         user.setEmail("275688470@qq.com");
         List<String> role = new ArrayList<>();
-        role.add("admin");
+//        role.add("admin");
+        role.add("editor");
         user.setRole(role);
+        user.setMachineLearningTaskState(0);
         mongoTemplate.insert(user);
-        log.info(user.getUserId().toString());
-
     }
 
     @Test
@@ -48,6 +48,13 @@ class AnnotationServerApplicationTests {
         Query query = new Query().addCriteria(Criteria.where("_id").is(10));
         User user = mongoTemplate.findOne(query, User.class);
         log.info(user.toString());
+    }
+
+    @Test
+    void updateUser() {
+        Query query = new Query().addCriteria(Criteria.where("username").is("hezepeng"));
+        User user = mongoTemplate.findOne(query, User.class);
+        mongoTemplate.save(user);
     }
 
     @Test

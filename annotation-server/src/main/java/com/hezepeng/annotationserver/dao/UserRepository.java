@@ -84,7 +84,7 @@ public class UserRepository {
                 System.out.println(newsLists.get(i).getNews_annotation_done().get(index) != null);
                 if (newsLists.get(i).getNews_annotation_done().get(index) != null && newsLists.get(i).getNews_annotation_done().get(index)) {
                     completeTaskCount++;
-                } else if (newsLists.get(i).getNews_position().get(index) != null) {
+                } else if (newsLists.get(i).getNews_annotation_done().get(index) != null && !newsLists.get(i).getNews_annotation_done().get(index)) {
                     revisionTaskCount++;
                 } else {
                     undoTaskCount++;
@@ -92,7 +92,6 @@ public class UserRepository {
             }
             UserBo userBo = new UserBo(userList.get(j), completeTaskCount, revisionTaskCount, undoTaskCount);
             data.add(userBo);
-            System.out.println(userBo);
         }
         return data;
     }

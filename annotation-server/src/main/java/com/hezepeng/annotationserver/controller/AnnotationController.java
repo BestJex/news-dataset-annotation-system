@@ -3,6 +3,7 @@ package com.hezepeng.annotationserver.controller;
 import com.hezepeng.annotationserver.annotation.NeedAdminAuthorize;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
+import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,4 +61,26 @@ public class AnnotationController {
     public ServerResponse checkAnnotation() {
         return annotationService.checkAnnotation();
     }
+
+
+    @GetMapping("/task/machine/skill/create/{skill}")
+    public ServerResponse createFoundationSkill(HttpServletRequest request, @PathVariable Integer skill) {
+        return annotationService.createFoundationSkill(request, skill);
+    }
+
+    @PostMapping("/task/machine/model/init")
+    public ServerResponse getOrSetMachineLearningModel(HttpServletRequest request) {
+        return annotationService.getOrSetMachineLearningModel(request);
+    }
+
+    @PostMapping("/task/machine/state/get")
+    public ServerResponse getAndUpdateMachineLearningTaskState(HttpServletRequest request) {
+        return annotationService.getAndUpdateMachineLearningTaskState(request);
+    }
+
+    @PostMapping("/task/machine/model/info")
+    public ServerResponse createModelInfo(HttpServletRequest request, @RequestBody User user) {
+        return annotationService.createModelInfo(request, user);
+    }
+
 }

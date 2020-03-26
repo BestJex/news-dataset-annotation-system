@@ -58,18 +58,24 @@ public class User {
 
     private String avatar;
 
-    public User(String username, String password, List<String> role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.name = "";
-        this.email = null;
-        this.lastLoginTime = null;
-        this.avatar = Const.DEFAULT_AVATAR;
-    }
+    private Integer foundationSkill;
+
+    private Integer machineLearningModel;
+
+    private Integer machineLearningTaskState;
+
+    private String modelName;
+
+    private String modelIntroduction;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date modelSubmitTime;
+
+    private String modelFileUrl;
 
     @PersistenceConstructor
-    public User(Integer userId, String openId, String username, String password, String name, String email, Date lastLoginTime, List<String> role, String avatar) {
+    public User(Integer userId, String openId, String username, String password, String name, String email, Date lastLoginTime, List<String> role, String avatar, Integer foundationSkill, Integer machineLearningModel, Integer machineLearningTaskState, String modelName, String modelIntroduction, Date modelSubmitTime, String modelFileUrl) {
         this.userId = userId;
         this.openId = openId;
         this.username = username;
@@ -79,6 +85,29 @@ public class User {
         this.lastLoginTime = lastLoginTime;
         this.role = role;
         this.avatar = avatar;
+        this.foundationSkill = foundationSkill;
+        this.machineLearningModel = machineLearningModel;
+        this.machineLearningTaskState = machineLearningTaskState;
+        this.modelName = modelName;
+        this.modelIntroduction = modelIntroduction;
+        this.modelSubmitTime = modelSubmitTime;
+        this.modelFileUrl = modelFileUrl;
+    }
+
+    public User(String username, String password, List<String> role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.name = "";
+        this.email = null;
+        this.lastLoginTime = null;
+        this.avatar = Const.DEFAULT_AVATAR;
+        this.foundationSkill = null;
+        this.machineLearningModel = null;
+        this.machineLearningTaskState = 0;
+        this.modelName = null;
+        this.modelIntroduction = null;
+        this.modelFileUrl = null;
     }
 
     public User() {

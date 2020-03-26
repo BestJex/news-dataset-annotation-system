@@ -3,12 +3,13 @@ package com.hezepeng.annotationserver.service;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
+import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -49,4 +50,28 @@ public interface AnnotationService {
      * 一键校验
      */
     ServerResponse checkAnnotation();
+
+    /**
+     * 提交机器学习基础
+     *
+     * @param skill
+     */
+    ServerResponse createFoundationSkill(HttpServletRequest request, Integer skill);
+
+    /**
+     * 获取并设置机器学习模型
+     */
+    ServerResponse getOrSetMachineLearningModel(HttpServletRequest request);
+
+    /**
+     * 获取并刷新机器学习任务最新的进度状态
+     */
+    ServerResponse getAndUpdateMachineLearningTaskState(HttpServletRequest request);
+
+    /**
+     * 设置模型名称、模型介绍
+     *
+     * @param user
+     */
+    ServerResponse createModelInfo(HttpServletRequest request, User user);
 }

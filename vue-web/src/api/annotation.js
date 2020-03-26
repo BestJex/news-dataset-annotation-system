@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import sk from 'element-ui/src/locale/lang/sk'
 
 export function saveAnnotation(annotation) {
   return request({
@@ -11,7 +12,7 @@ export function saveAnnotation(annotation) {
 export function getAnnotationListByUsername() {
   return request({
     url: '/annotation/task/list',
-    method: 'get',
+    method: 'get'
   })
 }
 
@@ -67,6 +68,37 @@ export function createTask(task) {
 export function checkAnnotation() {
   return request({
     url: '/annotation/check',
+    method: 'post'
+  })
+}
+
+export function createFoundationSkill(skill) {
+  return request({
+    url: '/annotation/task/machine/skill/create/' + skill,
+    method: 'get'
+  })
+}
+
+export function getOrSetMachineLearningModel() {
+  return request({
+    url: '/annotation/task/machine/model/init',
+    method: 'post'
+  })
+}
+
+export function getAndUpdateMachineLearningTaskState() {
+  return request({
+    url: '/annotation/task/machine/state/get',
+    method: 'post'
+  })
+}
+
+export function createModelInfo(modelName, modelIntroduction, modelFileUrl) {
+  return request({
+    url: '/annotation/task/machine/model/info',
+    data: {
+      modelName, modelIntroduction, modelFileUrl
+    },
     method: 'post'
   })
 }

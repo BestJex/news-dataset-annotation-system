@@ -34,8 +34,8 @@
         </el-col>
       </el-row>
       <el-row class="center-button" style="margin-top: 100px">
-        <el-button @click="activeIndex+=1" :disabled="user.foundationSkill==null||user.foundationSkill.length===0"
-                   type="primary">
+        <el-button @click="submitFoundationSkill"
+                   :disabled="user.foundationSkill==null||user.foundationSkill.length===0" type="primary">
           下一步
         </el-button>
       </el-row>
@@ -59,7 +59,7 @@
       <el-row class="center-button" style="margin-top: 200px">
         <el-button @click="activeIndex<0?null:activeIndex-=1">上一步</el-button>
         <el-button type="primary" @click="$router.push('/annotation/new')">开始标注数据</el-button>
-        <el-button type="success" @click="activeIndex+=1">下一步</el-button>
+        <el-button type="success" @click="updateMachineLearningTaskState">下一步</el-button>
       </el-row>
     </div>
 
@@ -100,7 +100,7 @@
       </el-row>
       <el-row class="center-button">
         <el-button @click="activeIndex-=1">上一步</el-button>
-        <el-button type="primary" @click="getRandom">随机重置</el-button>
+        <!--        <el-button type="primary" @click="getRandom">随机重置</el-button>-->
         <el-button type="success" icon="el-icon-download" @click="activeIndex+=1">开始训练</el-button>
       </el-row>
     </div>
@@ -116,9 +116,9 @@
             <div style="padding: 14px;">
               <span>{{ machineLearningModelIntroduction[user.machineLearningModel].title }}</span>
               <div>
-              <span class="text-introduction">
-                {{ machineLearningModelIntroduction[user.machineLearningModel].content }}
-              </span>
+                <span class="text-introduction">
+                  {{ machineLearningModelIntroduction[user.machineLearningModel].content }}
+                </span>
               </div>
             </div>
           </el-card>
@@ -143,7 +143,8 @@
             </el-form-item>
             <el-form-item label="模型介绍" prop="modelIntroduction">
               <el-col :span="14">
-                <el-input rows="8" type="textarea" v-model="user.modelIntroduction" placeholder="简单描述一下你的模型，思路方法、正确率等" />
+                <el-input rows="8" type="textarea" v-model="user.modelIntroduction"
+                          placeholder="简单描述一下你的模型，思路方法、正确率等" />
               </el-col>
             </el-form-item>
             <el-form-item label="上传代码">
@@ -182,7 +183,7 @@
       </el-row>
       <el-row class="center-button" style="margin-top: 0px !important;">
         <el-button @click="activeIndex-=1">上一步</el-button>
-        <el-button @click="activeIndex+=1" type="primary" :disabled="user.modelFileList.length===0">提交实验</el-button>
+        <el-button @click="submitModelInfo" type="primary" :disabled="user.modelFileList.length===0">提交实验</el-button>
       </el-row>
     </div>
 
@@ -200,6 +201,12 @@
 
 <script>
 import { getToken } from '@/utils/authorize'
+import {
+  createFoundationSkill, createModelInfo,
+  getAndUpdateMachineLearningTaskState,
+  getOrSetMachineLearningModel
+} from '@/api/annotation'
+import { getUserInfo } from '@/api/login'
 
 export default {
   name: 'NewMachineLearningTask',
@@ -207,12 +214,13 @@ export default {
   data() {
     return {
       user: {
-        foundationSkill: ['2'],
-        machineLearningModel: 2,
-        machineLearningTaskState: 5,
+        foundationSkill: [],
+        machineLearningModel: null,
+        machineLearningTaskState: 0,
         modelName: '',
         modelIntroduction: '',
-        modelFileList: []
+        modelFileList: ['1'],
+        modelFileUrl: 'sad'
       },
       activeIndex: 0,
       stepIntroduction: [
@@ -243,7 +251,7 @@ export default {
           'title': '新闻实体抽取',
           'content': '识别出新闻中出现的专有名称和有意义的数量短语并加以归类',
           'img': 'http://img.mukewang.com/szimg/5c904ad40884c53506000338-360-202.jpg'
-        },
+        }
         // {
         //   'title': '新闻实体抽取',
         //   'content': '识别出新闻中出现的专有名称和有意义的数量短语并加以归类',
@@ -255,12 +263,35 @@ export default {
         //   'img': 'http://img.mukewang.com/szimg/5aec33fd0001c86805400300-360-202.jpg'
         // }
       ],
-      token: getToken()
+      token: getToken(),
+      fullscreenLoading: false
     }
   },
 
   mounted: function() {
     // this.activeIndex = this.machineLearningTaskState
+    getUserInfo().then(response => {
+      const data = response.data
+      if (data.hasOwnProperty('foundationSkill')) {
+        this.user.foundationSkill = [response.data.foundationSkill.toString()]
+      }
+      if (data.hasOwnProperty('machineLearningTaskState')) {
+        this.user.machineLearningTaskState = response.data.machineLearningTaskState
+        this.activeIndex = this.user.machineLearningTaskState
+      }
+      if (data.hasOwnProperty('machineLearningModel')) {
+        this.user.machineLearningModel = response.data.machineLearningModel
+      }
+      if (data.hasOwnProperty('modelName')) {
+        this.user.modelName = response.data.modelName
+      }
+      if (data.hasOwnProperty('modelIntroduction')) {
+        this.user.modelIntroduction = response.data.modelIntroduction
+      }
+      if (data.hasOwnProperty('modelFileUrl')) {
+        this.user.modelFileUrl = response.data.modelFileUrl
+      }
+    })
   },
 
   methods: {
@@ -291,7 +322,88 @@ export default {
       this.$nextTick(() => {
         this.user.machineLearningModel = Math.floor(Math.random() * (4))
       })
+    },
+    openFullScreen(text, timeout) {
+      const loading = this.$loading({
+        lock: true,
+        text: text,
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      setTimeout(() => {
+        loading.close()
+      }, timeout)
+    },
+    submitFoundationSkill() {
+      if (this.user.machineLearningTaskState > 0) {
+        this.activeIndex += 1
+        return
+      }
+      if (this.user.foundationSkill == null || this.user.foundationSkill.length === 0) {
+        this.$message.error('请先选择你的基础信息')
+      } else {
+        createFoundationSkill(parseInt(this.user.foundationSkill[0])).then(response => {
+          this.$message.success(response.msg)
+          this.user.machineLearningTaskState = 1
+          this.activeIndex = 1
+        })
+      }
+    },
+
+    updateMachineLearningTaskState() {
+      if (this.user.machineLearningTaskState > 1) {
+        this.activeIndex += 1
+        return
+      }
+      let loading = this.$loading({
+        lock: true,
+        text: '校验中...请稍后',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      setTimeout(() => {
+        loading.close()
+      }, 1000)
+      getAndUpdateMachineLearningTaskState().then(response => {
+        this.user.machineLearningTaskState = response.data.machineLearningTaskState
+      }).then(() => {
+        setTimeout(() => {
+          loading.close()
+        }, 800)
+        this.activeIndex = 2
+        setTimeout(() => {
+          loading = this.$loading({
+            lock: true,
+            text: '正在为你寻找合适的模型任务',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          })
+          getOrSetMachineLearningModel().then(res => {
+            this.user.machineLearningModel = res.data
+          })
+        }, 500)
+        setTimeout(() => {
+          loading.close()
+          this.$message.success('模型任务已分配')
+        }, 800)
+      })
+    },
+
+    submitModelInfo() {
+      createModelInfo(this.user.modelName, this.user.modelIntroduction, this.user.modelFileUrl).then(response => {
+        if (this.user.modelName === '' || this.user.modelIntroduction === '') {
+          this.$message.error('请填写必要的模型名称和介绍')
+          return
+        } else if (this.user.modelFileUrl === '') {
+          this.$message.error('请先上传文件再提交')
+          return
+        }
+        this.$message.success(response.msg)
+        this.user.machineLearningTaskState = 5
+        this.activeIndex += 1
+      })
     }
+
   }
 }
 </script>

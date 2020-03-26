@@ -33,6 +33,22 @@ public class AnnotationRepository {
         mongoTemplate.save(news);
     }
 
+    public int getUserUndoTaskCount(String username) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("users").all(username));
+        query.fields().include("users").include("news_annotation_done");
+        List<News> newsLists = mongoTemplate.find(query, News.class);
+        AtomicInteger count = new AtomicInteger();
+        newsLists.forEach(news -> {
+
+            int index = news.getUsers().indexOf(username);
+            if (news.getNews_annotation_done().get(index) == null) {
+                count.addAndGet(1);
+            }
+        });
+        return count.get();
+    }
+
     public void updateNewsStateById(ObjectId id, Integer state) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(id));
