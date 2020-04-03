@@ -78,6 +78,12 @@ public class News {
 
     /**
      * 标注状态
+     * null: 未分配
+     * 0: 待标注
+     * 1: 标注中
+     * 2: 待校对
+     * 4: 待仲裁
+     * 10: 已完成
      */
     private Integer news_state;
 

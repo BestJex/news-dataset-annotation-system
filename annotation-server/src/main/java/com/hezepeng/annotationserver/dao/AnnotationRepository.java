@@ -2,6 +2,8 @@ package com.hezepeng.annotationserver.dao;
 
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.NewsSimilarity;
+import com.hezepeng.annotationserver.entity.bo.DeleteUserNewsResult;
+import com.hezepeng.annotationserver.entity.bo.TaskStatistic;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -260,9 +262,63 @@ public class AnnotationRepository {
 
     }
 
-    public Integer deleteUserNews(String username) {
+    public DeleteUserNewsResult deleteUserNews(String username) {
         Query query = new Query();
         query.addCriteria(Criteria.where("users").all(username));
-        return Math.toIntExact(mongoTemplate.remove(query, News.class).getDeletedCount());
+        List<News> list = mongoTemplate.find(query, News.class);
+        DeleteUserNewsResult result=new DeleteUserNewsResult();
+        AtomicInteger similarityAnnotationCount = new AtomicInteger(0);
+        Integer newsCount = list.size();
+        list.forEach(news -> {
+            news.setNews_state(null);
+            news.setNews_annotation_done(null);
+            news.setInit(false);
+            news.setUsers(null);
+            news.setNews_annotation_create_time(null);
+            news.setNews_type(null);
+            news.setNews_about_china(null);
+            news.setNews_emotion(null);
+            news.setNews_emotion_basis(null);
+            news.setNews_subject(null);
+            news.setNews_position(null);
+            news.setNews_delete(null);
+            Query q = new Query();
+            q.addCriteria(Criteria.where("username").is(username));
+            mongoTemplate.save(news);
+            // 删除该用户的新闻关联标注
+            similarityAnnotationCount.getAndAdd((int) mongoTemplate.remove(q, NewsSimilarity.class).getDeletedCount());
+        });
+        result.setDeleteSimilarityAnnotationCount(similarityAnnotationCount.get());
+        result.setInitNewsCount(newsCount);
+        return result;
+    }
+
+    public TaskStatistic getTaskStatistic() {
+        Query query = new Query();
+        // 获取新闻总数
+        TaskStatistic statistic = new TaskStatistic();
+        statistic.setNewsTotalCount(Math.toIntExact(mongoTemplate.count(query, News.class)));
+
+        // 获取累计完成标注
+        query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(10));
+        statistic.setAnnotationDoneCount(Math.toIntExact(mongoTemplate.count(query, News.class)));
+
+        //获取待校验数量
+        query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(2));
+        statistic.setWaitAnnotationCount(Math.toIntExact(mongoTemplate.count(query, News.class)));
+
+        // 获取待仲裁数量
+        query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(4));
+        statistic.setWaitArbitrateCount(Math.toIntExact(mongoTemplate.count(query, News.class)));
+
+        //获取进行中的新闻数量
+        query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(1));
+        statistic.setWaitAnnotationCount(Math.toIntExact(mongoTemplate.count(query, News.class)));
+
+        return statistic;
     }
 }

@@ -91,5 +91,13 @@ public interface AnnotationService {
      */
     ServerResponse addSimilarity(HttpServletRequest request, NewsSimilarity similarity);
 
+    /**
+     * 删除用户标注的数据 保留新闻 但删除该新闻的所有标注信息(包括其他人的)
+     */
     ServerResponse deleteUserNews(HttpServletRequest request, User user);
+
+    /**
+     * 统计任务标注情况
+     */
+    ServerResponse taskStatistic();
 }

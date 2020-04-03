@@ -7,6 +7,7 @@ import com.hezepeng.annotationserver.dao.AnnotationRepository;
 import com.hezepeng.annotationserver.dao.UserRepository;
 import com.hezepeng.annotationserver.entity.*;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
+import com.hezepeng.annotationserver.entity.bo.DeleteUserNewsResult;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import com.hezepeng.annotationserver.util.TokenUtil;
@@ -414,10 +415,19 @@ public class AnnotationServiceImpl implements AnnotationService {
     public ServerResponse deleteUserNews(HttpServletRequest request, User user) {
         try {
             String username = user.getUsername();
-            Integer deleteCount = annotationRepository.deleteUserNews(username);
-            return ServerResponse.createBySuccessMessage("成功删除与" + username + "相关的新闻标注记录共 " + deleteCount + " 条");
+            DeleteUserNewsResult result = annotationRepository.deleteUserNews(username);
+            return ServerResponse.createBySuccess(result);
         } catch (Exception ex) {
             return ServerResponse.createByErrorMessage("删除时发生异常");
+        }
+    }
+
+    @Override
+    public ServerResponse taskStatistic() {
+        try{
+            return ServerResponse.createBySuccess(annotationRepository.getTaskStatistic());
+        }catch (Exception ex){
+            return ServerResponse.createByErrorMessage("获取统计信息时发生异常");
         }
     }
 }

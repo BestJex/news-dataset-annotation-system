@@ -37,6 +37,7 @@ public class AnnotationController {
     }
 
     @PostMapping("/delete/user/news")
+    @NeedAdminAuthorize
     public ServerResponse deleteUserNews(HttpServletRequest request, @RequestBody User user) {
         return annotationService.deleteUserNews(request, user);
     }
@@ -102,6 +103,12 @@ public class AnnotationController {
     @PostMapping("/similarity/add")
     public ServerResponse addSimilarity(HttpServletRequest request, @RequestBody NewsSimilarity similarity) {
         return annotationService.addSimilarity(request, similarity);
+    }
+
+    @GetMapping("/task/statistic")
+    @NeedAdminAuthorize
+    public ServerResponse taskStatistic(){
+        return annotationService.taskStatistic();
     }
 
 }
