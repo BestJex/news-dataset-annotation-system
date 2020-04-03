@@ -41,6 +41,16 @@ export function checkPassword(password) {
   })
 }
 
+export function changePassword(password) {
+  return request({
+    url: '/user/changePassword',
+    method: 'post',
+    data: {
+      password
+    }
+  })
+}
+
 export function checkUsername(username) {
   return request({
     url: '/user/checkUsername',

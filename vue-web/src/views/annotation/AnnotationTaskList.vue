@@ -65,7 +65,7 @@
           <el-table-column
             prop="news_publish_timestamp"
             label="新闻发布时间"
-            width="150"
+            width="170"
           >
             <template slot-scope="scope">
               {{ new Date(scope.row.news_publish_timestamp*1000).Format('yy-MM-dd hh:mm:ss') }}
@@ -74,7 +74,7 @@
           <el-table-column
             prop="users"
             label="标注人"
-            width="130"
+            width="150"
           >
             <template slot-scope="scope">
               <div class="tag-list">
@@ -125,7 +125,7 @@
             <template slot-scope="scope">
               <el-popover
                 placement="right"
-                width="900"
+                width="1000"
                 trigger="hover"
               >
                 <table class="annotation-compare-table">
@@ -136,6 +136,7 @@
                     <td class="column">主题</td>
                     <td class="column">文章类型</td>
                     <td class="column">是否中国</td>
+                    <td class="column">情感依据段落</td>
                   </tr>
                   <tr v-for="(item,index) in scope.row.users" :key="index">
                     <td class="column">{{ item }}</td>
@@ -146,6 +147,7 @@
                     <td>{{ scope.row.news_subject[index]==null?'待标注':scope.row.news_subject[index] }}</td>
                     <td>{{ scope.row.news_type[index]==null?'待标注':scope.row.news_type[index] }}</td>
                     <td>{{ scope.row.news_about_china[index]==null?'待标注':scope.row.news_about_china[index] }}</td>
+                    <td style="width: 250px">{{ scope.row.news_emotion_basis[index]==null?'待标注':scope.row.news_emotion_basis[index] }}</td>
                   </tr>
                 </table>
                 <!--                <el-button type="primary">仲裁</el-button>-->
@@ -272,11 +274,11 @@ export default {
       getAnnotationListByUsername().then(response => {
         const data = response.data
         this.taskList = data
-        this.loading = false
-      })
-      this.$nextTick(() => {
-        this.$message.info('已更新最新数据')
-        this.loading = false
+      }).then(() => {
+        this.$nextTick(() => {
+          this.$message.info('已更新最新数据')
+          this.loading = false
+        })
       })
     },
     checkAnnotation() {

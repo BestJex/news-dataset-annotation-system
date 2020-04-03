@@ -3,11 +3,13 @@ package com.hezepeng.annotationserver.dao;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.entity.bo.UserBo;
+import com.hezepeng.annotationserver.util.MD5Util;
 import org.bson.io.BsonOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -53,6 +55,14 @@ public class UserRepository {
         return mongoTemplate.save(user);
     }
 
+    public boolean updatePassword(User user) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(user.getUsername()));
+        Update update = new Update();
+        update.set("password", MD5Util.getMD5Upper(user.getPassword()));
+        return mongoTemplate.updateFirst(query, update, User.class).getModifiedCount() > 0;
+    }
+
     public List<User> selectAllUser() {
         return mongoTemplate.findAll(User.class);
     }
@@ -70,7 +80,6 @@ public class UserRepository {
 
     public List<UserBo> selectAllUserTask() {
         List<User> userList = mongoTemplate.findAll(User.class);
-        System.out.println(userList);
         List<UserBo> data = new ArrayList<>();
         for (int j = 0; j < userList.size(); j++) {
             Query query = new Query();
@@ -80,8 +89,6 @@ public class UserRepository {
             int completeTaskCount = 0, revisionTaskCount = 0, undoTaskCount = 0;
             for (int i = 0; i < newsLists.size(); i++) {
                 int index = newsLists.get(i).getUsers().indexOf(userList.get(j).getUsername());
-                System.out.println(index);
-                System.out.println(newsLists.get(i).getNews_annotation_done().get(index) != null);
                 if (newsLists.get(i).getNews_annotation_done().get(index) != null && newsLists.get(i).getNews_annotation_done().get(index)) {
                     completeTaskCount++;
                 } else if (newsLists.get(i).getNews_annotation_done().get(index) != null && !newsLists.get(i).getNews_annotation_done().get(index)) {

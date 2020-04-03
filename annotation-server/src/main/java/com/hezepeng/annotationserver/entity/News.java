@@ -31,11 +31,6 @@ public class News {
     private String news_title;
 
     /**
-     * 新闻作者 list类型
-     */
-    private List<Author> news_author = new LinkedList<>();
-
-    /**
      * 新闻详情页url str类型
      */
     private String news_detail_url;
@@ -46,11 +41,11 @@ public class News {
     // 新闻发布时间戳 int类型
     private Integer news_publish_timestamp;
 
+    // 新闻发布北京时间 String类型
+    private String news_publish_beijing_time;
+
     // 新闻爬取到的时间 datetime类型
     private Date news_crawler_time;
-
-    // 新闻标签 list类型
-    private List<Tag> news_tags = new LinkedList<>();
 
     // 新闻来源地址 str类型 默认为news_website_url
     private String news_source_url;
@@ -76,7 +71,7 @@ public class News {
     private LinkedList<String> news_subject;
     private LinkedList<String> news_type;
     private LinkedList<Boolean> news_about_china;
-    private LinkedList<String> news_emotion_basis;
+    private LinkedList<LinkedList<String>> news_emotion_basis;
     private LinkedList<Date> news_annotation_create_time;
     private LinkedList<Boolean> news_delete;
     private LinkedList<Boolean> news_annotation_done;

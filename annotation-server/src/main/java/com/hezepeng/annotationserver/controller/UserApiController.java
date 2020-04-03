@@ -29,6 +29,11 @@ public class UserApiController {
         return userService.login(user.getUsername(), user.getPassword());
     }
 
+    @PostMapping("changePassword")
+    public ServerResponse changePassword(HttpServletRequest request, @RequestBody User user) {
+        return userService.changePassword(request, user);
+    }
+
     @GetMapping("info")
     public ServerResponse info(HttpServletRequest request) {
         return userService.getUserInfo(request);
@@ -66,7 +71,7 @@ public class UserApiController {
 
     @NeedAdminAuthorize
     @RequestMapping(value = "delete", method = RequestMethod.POST)
-    public ServerResponse delete(HttpServletRequest request,@RequestBody User user) {
+    public ServerResponse delete(HttpServletRequest request, @RequestBody User user) {
         return userService.deleteUser(request, user.getUsername());
     }
 

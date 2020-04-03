@@ -46,7 +46,7 @@ export const constantRouterMap = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/home/Home'),
-        meta: { title: '数据集标注系统', icon: 'dashboard' }
+        meta: { title: '机器学习任务平台', icon: 'dashboard' }
       }
     ]
   }
@@ -106,7 +106,7 @@ export const asyncRouterMap = [
         component: () => import('@/views/annotation/AnnotationTaskList'),
         name: 'AnnotationTaskList',
         meta: {
-          role: ['admin', 'editor'],
+          role: ['admin'],
           title: '标注列表',
           icon: 'table',
           noCache: true

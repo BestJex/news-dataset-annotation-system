@@ -24,6 +24,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.*;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -36,6 +37,8 @@ public class MongoConfiguration {
     @Autowired
     private MongoDbFactory factory;
 
+    private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     @Bean
     public MongoCustomConversions customConversions() {
         List<Converter<?, ?>> converters = new ArrayList<>();
@@ -43,7 +46,7 @@ public class MongoConfiguration {
         converters.add(new DateToZonedDateTimeConverter());
         converters.add(new ZonedDateTimeToDateConverter());
         converters.add(new StringToDateConverter());
-
+        converters.add(new ZonedDateTimeToStringConverter());
         converters.add(new TagConverter());
         return new MongoCustomConversions(converters);
     }
@@ -80,6 +83,8 @@ public class MongoConfiguration {
 
         @Override
         public ZonedDateTime convert(Date source) {
+            log.info("xx" + source.toString());
+
             return source == null ? null : ZonedDateTime.ofInstant(source.toInstant(), ZoneId.systemDefault());
         }
     }
@@ -88,8 +93,18 @@ public class MongoConfiguration {
 
         @Override
         public Date convert(ZonedDateTime source) {
+            log.info("xx" + source.toString());
 
             return source == null ? null : Date.from(source.toInstant());
+        }
+    }
+
+    class ZonedDateTimeToStringConverter implements Converter<ZonedDateTime, String> {
+
+        @Override
+        public String convert(ZonedDateTime source) {
+            log.info("xx" + source.toString());
+            return source == null ? null : format.format(Date.from(source.toInstant()));
         }
     }
 
@@ -98,6 +113,7 @@ public class MongoConfiguration {
 
         @Override
         public Date convert(String source) {
+            log.info("xx" + source.toString());
             return source == null ? null : DateTimeUtil.strToDate(source);
         }
     }

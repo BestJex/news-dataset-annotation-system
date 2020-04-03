@@ -26,4 +26,5 @@ public interface UserService {
 
     ServerResponse getAllUserTask(HttpServletRequest request);
 
+    ServerResponse changePassword(HttpServletRequest request, User user);
 }

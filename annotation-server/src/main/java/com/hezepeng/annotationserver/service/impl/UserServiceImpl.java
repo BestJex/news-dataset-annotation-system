@@ -119,7 +119,13 @@ public class UserServiceImpl implements UserService {
             if (StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getPassword())) {
                 return ServerResponse.createByErrorMessage("注册信息缺失");
             }
+            User existUser = userRepository.selectUserByUsername(user.getUsername());
+            System.out.println(existUser);
+            if (existUser != null) {
+                return ServerResponse.createByErrorMessage("用户已存在");
+            }
             user.setPassword(MD5Util.getMD5Upper(user.getPassword()));
+            user.setMachineLearningTaskState(0);
             userRepository.addUser(user);
             return ServerResponse.createBySuccess();
         } catch (Exception ex) {
@@ -136,5 +142,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
+    @Override
+    public ServerResponse changePassword(HttpServletRequest request,User user) {
+        user.setUsername(TokenUtil.getUsernameByRequest(request));
+        if(userRepository.updatePassword(user)){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"密码已修改，请重新登陆");
+        }else{
+            return ServerResponse.createByErrorMessage("修改失败");
+        }
+    }
 }

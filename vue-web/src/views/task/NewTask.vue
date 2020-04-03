@@ -45,7 +45,7 @@
           <el-form-item>
             <el-button icon="el-icon-refresh-left" round @click="onReset">重置</el-button>
 
-            <el-button icon="el-icon-finished" type="primary" round :disabled="!formChanged" @click="onSubmit">注册
+            <el-button icon="el-icon-finished" type="primary" round :disabled="!formChanged" @click="onSubmit">开始分配
             </el-button>
           </el-form-item>
 
@@ -74,6 +74,10 @@
             </div>
           </el-card>
         </el-row>
+        <el-row style="margin-top: 20px">
+          <el-button type="primary" @click="onAllSelect">全选</el-button>
+          <el-button type="primary" @click="onAverageDistribute">平均分配</el-button>
+        </el-row>
       </el-col>
     </el-row>
   </div>
@@ -82,7 +86,7 @@
 <script>
 
 import { getUserList } from '@/api/user'
-import { createTask } from '@/api/annotation'
+import { createTask, getUndoNewsCount } from '@/api/annotation'
 
 export default {
   name: 'NewTask',
@@ -139,6 +143,9 @@ export default {
     }
   },
   mounted: function() {
+    getUndoNewsCount().then(response => {
+      this.totalNewsCount = response.data
+    })
     getUserList().then(response => {
       const data = response.data
       const userTaskList = []
@@ -154,6 +161,19 @@ export default {
   },
 
   methods: {
+    onAllSelect() {
+      for (const item of this.userTaskList) {
+        console.log(item)
+        this.form.userTaskList.push(item)
+      }
+    },
+    onAverageDistribute() {
+      const count = this.form.userTaskList.length
+      const taskCount = parseInt(this.form.newsCount * this.form.ratio / count)
+      for (const i in this.form.userTaskList) {
+        this.form.userTaskList[i].taskCount = taskCount
+      }
+    },
     onReset() {
       this.form = {
         newsCount: 0,

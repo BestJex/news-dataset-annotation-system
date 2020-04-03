@@ -3,6 +3,7 @@ package com.hezepeng.annotationserver.controller;
 import com.hezepeng.annotationserver.annotation.NeedAdminAuthorize;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
+import com.hezepeng.annotationserver.entity.NewsSimilarity;
 import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.service.AnnotationService;
@@ -29,9 +30,19 @@ public class AnnotationController {
         return annotationService.getNewsAnnotationList(request);
     }
 
+    @GetMapping("/count")
+    @NeedAdminAuthorize
+    public ServerResponse GetUndoNewsCount() {
+        return annotationService.GetUndoNewsCount();
+    }
+
+    @PostMapping("/delete/user/news")
+    public ServerResponse deleteUserNews(HttpServletRequest request, @RequestBody User user) {
+        return annotationService.deleteUserNews(request, user);
+    }
+
     @PostMapping("/add")
     public ServerResponse addNewsAnnotation(HttpServletRequest request, @RequestBody NewsAnnotation annotation) {
-        System.out.println(annotation);
         return annotationService.addNewsAnnotation(request, annotation);
     }
 
@@ -81,6 +92,16 @@ public class AnnotationController {
     @PostMapping("/task/machine/model/info")
     public ServerResponse createModelInfo(HttpServletRequest request, @RequestBody User user) {
         return annotationService.createModelInfo(request, user);
+    }
+
+    @GetMapping("/task/info")
+    public ServerResponse getUserTaskInfo(HttpServletRequest request) {
+        return annotationService.getUserTaskInfo(request);
+    }
+
+    @PostMapping("/similarity/add")
+    public ServerResponse addSimilarity(HttpServletRequest request, @RequestBody NewsSimilarity similarity) {
+        return annotationService.addSimilarity(request, similarity);
     }
 
 }

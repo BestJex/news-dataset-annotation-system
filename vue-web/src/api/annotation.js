@@ -65,10 +65,32 @@ export function createTask(task) {
   })
 }
 
+export function getUndoNewsCount() {
+  return request({
+    url: '/annotation/count',
+    method: 'get'
+  })
+}
+
+export function addSimilarity(similarity) {
+  return request({
+    url: '/annotation/similarity/add',
+    method: 'post',
+    data: similarity
+  })
+}
+
 export function checkAnnotation() {
   return request({
     url: '/annotation/check',
     method: 'post'
+  })
+}
+
+export function getUserTaskInfo() {
+  return request({
+    url: '/annotation/task/info',
+    method: 'get'
   })
 }
 

@@ -6,6 +6,7 @@ import com.hezepeng.annotationserver.util.MD5Util;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,11 +44,12 @@ class AnnotationServerApplicationTests {
         mongoTemplate.insert(user);
     }
 
+
     @Test
-    void findUser() {
-        Query query = new Query().addCriteria(Criteria.where("_id").is(10));
-        User user = mongoTemplate.findOne(query, User.class);
-        log.info(user.toString());
+    void findNews() {
+        Query query = new Query().addCriteria(Criteria.where("_id").is(new ObjectId("5e3ffbe33525447237a2dcc7")));
+        News news = mongoTemplate.findOne(query, News.class);
+        System.out.println(news.getNews_publish_beijing_time());
     }
 
     @Test

@@ -31,7 +31,7 @@ public class NewsAnnotation {
 
     private Boolean news_about_china;
 
-    private String news_emotion_basis;
+    private LinkedList<String> news_emotion_basis;
 
     private Date news_annotation_create_time;
 

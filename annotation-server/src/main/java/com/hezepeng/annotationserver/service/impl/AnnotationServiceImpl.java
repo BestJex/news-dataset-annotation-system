@@ -1,17 +1,16 @@
 package com.hezepeng.annotationserver.service.impl;
 
 import com.hezepeng.annotationserver.common.Const;
+import com.hezepeng.annotationserver.common.ResponseCode;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.dao.AnnotationRepository;
 import com.hezepeng.annotationserver.dao.UserRepository;
-import com.hezepeng.annotationserver.entity.News;
-import com.hezepeng.annotationserver.entity.NewsAnnotation;
-import com.hezepeng.annotationserver.entity.User;
-import com.hezepeng.annotationserver.entity.UserTask;
+import com.hezepeng.annotationserver.entity.*;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
 import com.hezepeng.annotationserver.service.AnnotationService;
 import com.hezepeng.annotationserver.util.TokenUtil;
+import com.sun.org.apache.xalan.internal.xsltc.util.IntegerArray;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -68,7 +67,7 @@ public class AnnotationServiceImpl implements AnnotationService {
     @Override
     public ServerResponse<News> getOneNewsAnnotationById(String id) {
         try {
-            News data = annotationRepository.findOneSimpleNewsById(id);
+            News data = annotationRepository.findOneNewsById(id);
             return ServerResponse.createBySuccess(data);
 
         } catch (Exception ex) {
@@ -109,7 +108,6 @@ public class AnnotationServiceImpl implements AnnotationService {
             News news = annotationRepository.findOneNewsById(id);
             int index = news.getUsers().indexOf(username);
             news.setNews_state(1);
-            System.out.println(news);
             // 检查是更新还是新增
             LinkedList<Boolean> done = news.getNews_annotation_done();
             if (done.get(index) != null) {
@@ -138,7 +136,7 @@ public class AnnotationServiceImpl implements AnnotationService {
             LinkedList<Boolean> aboutChina = news.getNews_about_china();
             aboutChina.set(index, annotation.getNews_about_china());
             // 情感依据
-            LinkedList<String> basis = news.getNews_emotion_basis();
+            LinkedList<LinkedList<String>> basis = news.getNews_emotion_basis();
             basis.set(index, annotation.getNews_emotion_basis());
 
             // 如果这篇新闻的标注者都标注完了 就把状态改成待校验
@@ -305,10 +303,13 @@ public class AnnotationServiceImpl implements AnnotationService {
         try {
             String username = TokenUtil.getUsernameByRequest(request);
             User user = userRepository.selectUserByUsername(username);
+            if (user.getFoundationSkill() != null) {
+                return ServerResponse.createBySuccess("状态无需更新", 0);
+            }
             user.setFoundationSkill(skill);
             user.setMachineLearningTaskState(1);
             userRepository.updateUser(user);
-            return ServerResponse.createBySuccessMessage("保存成功!");
+            return ServerResponse.createBySuccess("保存成功!", 1);
         } catch (Exception e) {
             return ServerResponse.createByErrorMessage("发生异常");
         }
@@ -316,65 +317,107 @@ public class AnnotationServiceImpl implements AnnotationService {
 
     @Override
     public ServerResponse getOrSetMachineLearningModel(HttpServletRequest request) {
-        try {
-            String username = TokenUtil.getUsernameByRequest(request);
-            Integer machineNo = new Random().nextInt(4);
-            User user = userRepository.selectUserByUsername(username);
-            user.setMachineLearningModel(machineNo);
-            if (user.getMachineLearningTaskState() != null && user.getMachineLearningTaskState() < 2) {
-                return ServerResponse.createByErrorMessage("请先完成第一步操作");
-
-            }
-            userRepository.updateUser(user);
-            return ServerResponse.createBySuccess(machineNo);
-        } catch (Exception e) {
-            return ServerResponse.createByErrorMessage("发生异常");
-        }
+        return ServerResponse.createByErrorMessage("功能暂未开放");
+//        try {
+//            String username = TokenUtil.getUsernameByRequest(request);
+//            Integer machineNo = new Random().nextInt(3);
+//            User user = userRepository.selectUserByUsername(username);
+//            user.setMachineLearningModel(machineNo);
+//            if (user.getMachineLearningTaskState() != null && user.getMachineLearningTaskState() < 2) {
+//                return ServerResponse.createByErrorMessage("请先完成第一步操作");
+//
+//            }
+//            userRepository.updateUser(user);
+//            return ServerResponse.createBySuccess(machineNo);
+//        } catch (Exception e) {
+//            return ServerResponse.createByErrorMessage("发生异常");
+//        }
     }
 
     @Override
     public ServerResponse getAndUpdateMachineLearningTaskState(HttpServletRequest request) {
-        try {
-            String username = TokenUtil.getUsernameByRequest(request);
-            User user = userRepository.selectUserByUsername(username);
-            if (user.getMachineLearningTaskState() != null && user.getMachineLearningTaskState() < 2) {
-                int count = annotationRepository.getUserUndoTaskCount(username);
-                if (count > 0) {
-                    return ServerResponse.createByErrorMessage("请先完成标注任务再进入下一步");
-                }
-                user.setMachineLearningTaskState(4);
-                userRepository.updateUser(user);
-                return ServerResponse.createBySuccess("恭喜你已经完成了数据标注任务", user);
-            } else {
-                return ServerResponse.createByErrorMessage("请先完成前置操作");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ServerResponse.createByErrorMessage("发生异常");
-        }
+        return ServerResponse.createByErrorMessage("功能暂未开放");
+//        try {
+//            String username = TokenUtil.getUsernameByRequest(request);
+//            User user = userRepository.selectUserByUsername(username);
+//            if (user.getMachineLearningTaskState() != null && user.getMachineLearningTaskState() < 2) {
+//                int count = annotationRepository.getUserUndoTaskCount(username);
+//                if (count > 0) {
+//                    return ServerResponse.createByErrorMessage("请先完成标注任务再进入下一步");
+//                }
+//                user.setMachineLearningTaskState(4);
+//                userRepository.updateUser(user);
+//                return ServerResponse.createBySuccess("恭喜你已经完成了数据标注任务", user);
+//            } else if (user.getMachineLearningTaskState() >= 2) {
+//                return ServerResponse.createBySuccess(user);
+//            } else {
+//                return ServerResponse.createByErrorMessage("请先完成前置操作");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ServerResponse.createByErrorMessage("发生异常");
+//        }
     }
 
     @Override
     public ServerResponse createModelInfo(HttpServletRequest request, User data) {
-        if (StringUtils.isEmpty(data.getModelName()) || StringUtils.isEmpty(data.getModelIntroduction())) {
-            return ServerResponse.createByErrorMessage("请填写必要的模型名称和介绍");
-        } else if (StringUtils.isEmpty(data.getModelFileUrl())) {
-            return ServerResponse.createByErrorMessage("请先上传文件再提交");
+        return ServerResponse.createByErrorMessage("功能暂未开放");
+//        if (StringUtils.isEmpty(data.getModelName()) || StringUtils.isEmpty(data.getModelIntroduction())) {
+//            return ServerResponse.createByErrorMessage("请填写必要的模型名称和介绍");
+//        } else if (StringUtils.isEmpty(data.getModelFileUrl())) {
+//            return ServerResponse.createByErrorMessage("请先上传文件再提交");
+//        }
+//        try {
+//            String username = TokenUtil.getUsernameByRequest(request);
+//            User user = userRepository.selectUserByUsername(username);
+//            if (user.getMachineLearningTaskState() < 4) {
+//                return ServerResponse.createByErrorMessage("请先完成前置操作");
+//            }
+//            user.setModelName(data.getModelName());
+//            user.setModelIntroduction(data.getModelIntroduction());
+//            user.setModelFileUrl(data.getModelFileUrl());
+//            user.setMachineLearningTaskState(5);
+//            userRepository.updateUser(user);
+//            return ServerResponse.createBySuccessMessage("提交成功!");
+//        } catch (Exception e) {
+//            return ServerResponse.createByErrorMessage("发生异常");
+//        }
+    }
+
+    @Override
+    public ServerResponse getUserTaskInfo(HttpServletRequest request) {
+        String username = TokenUtil.getUsernameByRequest(request);
+        return ServerResponse.createBySuccess(annotationRepository.getUserUndoTaskCount(username));
+
+    }
+
+    @Override
+    public ServerResponse GetUndoNewsCount() {
+        return ServerResponse.createBySuccess(annotationRepository.getUndoNewsCount());
+    }
+
+    @Override
+    public ServerResponse addSimilarity(HttpServletRequest request, NewsSimilarity similarity) {
+        if (StringUtils.isEmpty(similarity.getId_A()) || StringUtils.isEmpty(similarity.getId_B())) {
+            return ServerResponse.createByErrorMessage("标注数据不完整!");
         }
+        similarity.setUsername(TokenUtil.getUsernameByRequest(request));
+        boolean flag = annotationRepository.addSimilarity(similarity);
+        if (flag) {
+            return ServerResponse.createBySuccessMessage("相关事件标注成功");
+        } else {
+            return ServerResponse.createByErrorMessage("相关事件标注失败");
+        }
+    }
+
+    @Override
+    public ServerResponse deleteUserNews(HttpServletRequest request, User user) {
         try {
-            String username = TokenUtil.getUsernameByRequest(request);
-            User user = userRepository.selectUserByUsername(username);
-            if (user.getMachineLearningTaskState() < 4) {
-                return ServerResponse.createByErrorMessage("请先完成前置操作");
-            }
-            user.setModelName(data.getModelName());
-            user.setModelIntroduction(data.getModelIntroduction());
-            user.setModelFileUrl(data.getModelFileUrl());
-            user.setMachineLearningTaskState(5);
-            userRepository.updateUser(user);
-            return ServerResponse.createBySuccessMessage("提交成功!");
-        } catch (Exception e) {
-            return ServerResponse.createByErrorMessage("发生异常");
+            String username = user.getUsername();
+            Integer deleteCount = annotationRepository.deleteUserNews(username);
+            return ServerResponse.createBySuccessMessage("成功删除与" + username + "相关的新闻标注记录共 " + deleteCount + " 条");
+        } catch (Exception ex) {
+            return ServerResponse.createByErrorMessage("删除时发生异常");
         }
     }
 }

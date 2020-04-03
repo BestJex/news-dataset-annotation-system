@@ -50,8 +50,8 @@
               <i class="el-icon-s-claim svg-icon"></i>
             </div>
             <div class="card-right-text">
-              <div class="card-right-title">待分配标注任务</div>
-              <div class="card-right-data">1000篇</div>
+              <div class="card-right-title">待标注任务</div>
+              <div class="card-right-data">{{ user.undoTaskCount }}篇</div>
             </div>
           </el-card>
         </el-col>
@@ -66,8 +66,9 @@
     <div v-if="activeIndex === 2 && activeIndex <= user.machineLearningTaskState">
       <el-row type="flex" justify="center" :gutter="40" style="padding: 0 100px">
         <div>
-          <el-col v-for="(item, index) in machineLearningModelIntroduction" :key="index" :md="6" :xs="24" :sm="12">
-            <el-card v-if="index===user.machineLearningModel" :body-style="{ padding: '0px' }"
+          <el-col v-for="(item, index) in machineLearningModelIntroduction" :key="index" :md="8" :xs="24" :sm="8">
+            <el-card v-if="index===user.machineLearningModel||user.machineLearningModel===null"
+                     :body-style="{ padding: '0px' }"
                      style="margin-bottom: 30px">
               <img
                 :src="item.img"
@@ -135,7 +136,7 @@
     <div v-if="activeIndex === 4 && activeIndex <= user.machineLearningTaskState">
       <el-row>
         <div>
-          <el-form :model="user" auto-complete="on" label-width="120px">
+          <el-form ref="form" :model="user" :rules="formRules" auto-complete="on" label-width="120px">
             <el-form-item label="模型名称" prop="modelName">
               <el-col :span="8">
                 <el-input v-model="user.modelName" placeholder="例如：基于SVM的情感分类预测模型" />
@@ -183,7 +184,7 @@
       </el-row>
       <el-row class="center-button" style="margin-top: 0px !important;">
         <el-button @click="activeIndex-=1">上一步</el-button>
-        <el-button @click="submitModelInfo" type="primary" :disabled="user.modelFileList.length===0">提交实验</el-button>
+        <el-button @click="submitModelInfo" type="primary">提交实验</el-button>
       </el-row>
     </div>
 
@@ -204,7 +205,7 @@ import { getToken } from '@/utils/authorize'
 import {
   createFoundationSkill, createModelInfo,
   getAndUpdateMachineLearningTaskState,
-  getOrSetMachineLearningModel
+  getOrSetMachineLearningModel, getUserTaskInfo
 } from '@/api/annotation'
 import { getUserInfo } from '@/api/login'
 
@@ -214,14 +215,16 @@ export default {
   data() {
     return {
       user: {
+        undoTaskCount: 1000,
         foundationSkill: [],
         machineLearningModel: null,
         machineLearningTaskState: 0,
         modelName: '',
         modelIntroduction: '',
-        modelFileList: ['1'],
+        modelFileList: [],
         modelFileUrl: 'sad'
       },
+      checkboxDisable: false,
       activeIndex: 0,
       stepIntroduction: [
         '请先选择你的机器学习基础，帮助我们更准确地给你分配机器学习任务',
@@ -246,12 +249,12 @@ export default {
           'title': '新闻话题分类',
           'content': '建立一个半监督模型，对未标注的新闻进行话题分类',
           'img': 'http://img.mukewang.com/szimg/5ce7e7970894f48706000338-360-202.jpg'
-        },
-        {
-          'title': '新闻实体抽取',
-          'content': '识别出新闻中出现的专有名称和有意义的数量短语并加以归类',
-          'img': 'http://img.mukewang.com/szimg/5c904ad40884c53506000338-360-202.jpg'
         }
+        // {
+        //   'title': '新闻实体抽取',
+        //   'content': '识别出新闻中出现的专有名称和有意义的数量短语并加以归类',
+        //   'img': 'http://img.mukewang.com/szimg/5c904ad40884c53506000338-360-202.jpg'
+        // }
         // {
         //   'title': '新闻实体抽取',
         //   'content': '识别出新闻中出现的专有名称和有意义的数量短语并加以归类',
@@ -264,15 +267,23 @@ export default {
         // }
       ],
       token: getToken(),
-      fullscreenLoading: false
+      fullscreenLoading: false,
+      formRules: {
+        modelName: [{ required: true, trigger: 'blur', message: '模型名称不能为空' }],
+        modelIntroduction: [{ required: true, trigger: 'blur', message: '模型介绍不能为空' }]
+      }
     }
   },
 
   mounted: function() {
-    // this.activeIndex = this.machineLearningTaskState
+    this.activeIndex = this.machineLearningTaskState
+    getUserTaskInfo().then(response => {
+      this.user.undoTaskCount = response.data
+    })
     getUserInfo().then(response => {
       const data = response.data
       if (data.hasOwnProperty('foundationSkill')) {
+        this.checkboxDisable = true
         this.user.foundationSkill = [response.data.foundationSkill.toString()]
       }
       if (data.hasOwnProperty('machineLearningTaskState')) {
@@ -307,17 +318,15 @@ export default {
     handleRemove(file, fileList) {
       // this.clearUploadProgress()
     },
+
     submitUpload(fileInfo) {
       console.log(fileInfo)
       if (fileInfo.file == null) {
         this.$message.error('请先选择要上传的文件')
         return
       }
-      this.$message.success('已成功上传代码文件')
-      setTimeout(() => {
-        this.activeIndex += 1
-      }, 1000)
     },
+
     getRandom() {
       this.$nextTick(() => {
         this.user.machineLearningModel = Math.floor(Math.random() * (4))
@@ -335,14 +344,22 @@ export default {
       }, timeout)
     },
     submitFoundationSkill() {
-      if (this.user.machineLearningTaskState > 0) {
-        this.activeIndex += 1
-        return
-      }
+      getUserTaskInfo().then(response => {
+        this.user.undoTaskCount = response.data
+      })
+      // if (this.user.machineLearningTaskState > 0) {
+      //   this.activeIndex += 1
+      //   return
+      // }
       if (this.user.foundationSkill == null || this.user.foundationSkill.length === 0) {
         this.$message.error('请先选择你的基础信息')
       } else {
         createFoundationSkill(parseInt(this.user.foundationSkill[0])).then(response => {
+          if (response.data === 0) {
+            this.$message.info(response.msg)
+            this.activeIndex = 1
+            return
+          }
           this.$message.success(response.msg)
           this.user.machineLearningTaskState = 1
           this.activeIndex = 1
@@ -361,6 +378,9 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
+      getUserTaskInfo().then(response => {
+        this.user.undoTaskCount = response.data
+      })
       setTimeout(() => {
         loading.close()
       }, 1000)
@@ -371,37 +391,43 @@ export default {
           loading.close()
         }, 800)
         this.activeIndex = 2
+        this.user.machineLearningModel = null
         setTimeout(() => {
           loading = this.$loading({
             lock: true,
-            text: '正在为你寻找合适的模型任务',
+            text: '正在为你分配合适的模型任务',
             spinner: 'el-icon-loading',
-            background: 'rgba(0, 0, 0, 0.7)'
+            background: 'rgba(0, 0, 80%, 0.5)'
           })
+        }, 2000)
+        setTimeout(() => {
+          loading.close()
           getOrSetMachineLearningModel().then(res => {
             this.user.machineLearningModel = res.data
           })
-        }, 500)
-        setTimeout(() => {
-          loading.close()
           this.$message.success('模型任务已分配')
-        }, 800)
+        }, 4000)
       })
     },
 
     submitModelInfo() {
-      createModelInfo(this.user.modelName, this.user.modelIntroduction, this.user.modelFileUrl).then(response => {
-        if (this.user.modelName === '' || this.user.modelIntroduction === '') {
-          this.$message.error('请填写必要的模型名称和介绍')
-          return
-        } else if (this.user.modelFileUrl === '') {
-          this.$message.error('请先上传文件再提交')
-          return
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          createModelInfo(this.user.modelName, this.user.modelIntroduction, this.user.modelFileUrl).then(response => {
+            if (this.user.modelName === '' || this.user.modelIntroduction === '') {
+              this.$message.error('请填写必要的模型名称和介绍')
+              return
+            } else if (this.user.modelFileUrl === '') {
+              this.$message.error('请先上传文件再提交')
+              return
+            }
+            this.$message.success(response.msg)
+            this.user.machineLearningTaskState = 5
+            this.activeIndex += 1
+          })
         }
-        this.$message.success(response.msg)
-        this.user.machineLearningTaskState = 5
-        this.activeIndex += 1
       })
+
     }
 
   }

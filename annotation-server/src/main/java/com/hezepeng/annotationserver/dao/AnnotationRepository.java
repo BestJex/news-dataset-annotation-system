@@ -1,6 +1,7 @@
 package com.hezepeng.annotationserver.dao;
 
 import com.hezepeng.annotationserver.entity.News;
+import com.hezepeng.annotationserver.entity.NewsSimilarity;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,23 @@ public class AnnotationRepository {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    public boolean addSimilarity(NewsSimilarity similarity) {
+        try {
+            mongoTemplate.save(similarity);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     public void updateNews(News news) {
         mongoTemplate.save(news);
+    }
+
+    public int getUndoNewsCount() {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("news_state").is(null));
+        return (int) mongoTemplate.count(query, News.class);
     }
 
     public int getUserUndoTaskCount(String username) {
@@ -61,7 +77,8 @@ public class AnnotationRepository {
         Query query = new Query();
         query.fields().exclude("news_html_content")
                 .exclude("news_content")
-                .exclude("news_content_translate_en");
+                .exclude("news_content_translate_en")
+                .exclude("news_content_translate_cn");
         return mongoTemplate.find(query, News.class);
     }
 
@@ -69,7 +86,8 @@ public class AnnotationRepository {
         Query query = new Query();
         query.fields().exclude("news_html_content")
                 .exclude("news_content")
-                .exclude("news_content_translate_en");
+                .exclude("news_content_translate_en")
+                .exclude("news_content_translate_cn");
         query.addCriteria(Criteria.where("init").is(true));
         query.with((Sort.by(Sort.Order.asc("_id"))));
         return mongoTemplate.find(query, News.class);
@@ -78,6 +96,10 @@ public class AnnotationRepository {
     public List<News> findTaskListByUsername(String username) {
         Query query = new Query();
         query.addCriteria(Criteria.where("users").all(username));
+        query.fields().exclude("news_html_content")
+                .exclude("news_content")
+                .exclude("news_content_translate_en")
+                .exclude("news_content_translate_cn");
         query.with((Sort.by(Sort.Order.asc("_id"))));
         return mongoTemplate.find(query, News.class);
     }
@@ -86,13 +108,19 @@ public class AnnotationRepository {
         Query query = new Query();
         query.fields().exclude("news_html_content")
                 .exclude("news_content")
-                .exclude("news_content_translate_en");
+                .exclude("news_content_translate_en")
+                .exclude("news_content_translate_cn");
         query.skip(skip).limit(limit);
         return mongoTemplate.find(query, News.class);
     }
 
     public List<News> findNewsListByState(Integer state, Integer skip, Integer limit) {
         Query query = new Query();
+        if (state != null) {
+            query.fields().exclude("news_content")
+                    .exclude("news_content_translate_en")
+                    .exclude("news_content_translate_cn");
+        }
         query.addCriteria(Criteria.where("news_state").is(state));
         if (skip != null) {
             query.skip(skip);
@@ -230,5 +258,11 @@ public class AnnotationRepository {
         }
         return needUpdate;
 
+    }
+
+    public Integer deleteUserNews(String username) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("users").all(username));
+        return Math.toIntExact(mongoTemplate.remove(query, News.class).getDeletedCount());
     }
 }

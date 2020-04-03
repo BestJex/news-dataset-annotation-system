@@ -3,6 +3,7 @@ package com.hezepeng.annotationserver.service;
 import com.hezepeng.annotationserver.common.ServerResponse;
 import com.hezepeng.annotationserver.entity.News;
 import com.hezepeng.annotationserver.entity.NewsAnnotation;
+import com.hezepeng.annotationserver.entity.NewsSimilarity;
 import com.hezepeng.annotationserver.entity.User;
 import com.hezepeng.annotationserver.entity.bo.AnnotationTask;
 import com.hezepeng.annotationserver.entity.bo.NewsBo;
@@ -74,4 +75,21 @@ public interface AnnotationService {
      * @param user
      */
     ServerResponse createModelInfo(HttpServletRequest request, User user);
+
+    /**
+     * 获取用户任务完成情况
+     */
+    ServerResponse getUserTaskInfo(HttpServletRequest request);
+
+    /**
+     * 获取可分配的新闻数
+     */
+    ServerResponse GetUndoNewsCount();
+
+    /**
+     * 新增新闻是否同一件事
+     */
+    ServerResponse addSimilarity(HttpServletRequest request, NewsSimilarity similarity);
+
+    ServerResponse deleteUserNews(HttpServletRequest request, User user);
 }

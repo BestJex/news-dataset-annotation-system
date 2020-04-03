@@ -56,8 +56,8 @@ export default {
     const validPassword = (rule, value, callback) => {
       if (!value) {
         callback(new Error('请输入新密码'))
-      } else if (value.toString().length < 6 || value.toString().length > 18) {
-        callback(new Error('密码长度为6 - 18个字符'))
+      } else if (value.toString().length < 4 || value.toString().length > 30) {
+        callback(new Error('密码长度为4 - 30个字符'))
       } else {
         callback()
       }
@@ -85,7 +85,6 @@ export default {
         username: [{ required: true, trigger: 'blur', message: '用户名不能为空' }],
         name: [{ required: true, trigger: 'blur', message: '姓名不能为空' }],
         role: [{ required: true, trigger: 'blur', message: '角色不能为空' }],
-        email: [{ required: true, trigger: 'blur', message: '邮箱不能为空' }],
         password: [{ required: true, trigger: 'blur', validator: validPassword }],
         passwordAgain: [{ required: true, trigger: 'blur', validator: validPasswordAgain }]
       },
